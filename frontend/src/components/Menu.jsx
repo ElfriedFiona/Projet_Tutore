@@ -20,29 +20,27 @@ export default function Menu() {
     ];
 
     return(
-        <div className='hidden md:block w-[20vw]'>
-            <div className='flex flex-col w-[20vw] h-[94vh] justify-between'> 
+        <div className='hidden md:flex flex-col block justify-between h-full'> 
+            <div>
+                <h4 className='text-[10px] font-light p-6'>ETUDIANT PORTAL</h4>
+                <nav className="flex flex-col w-auto">
+                    {buttonsMenu.map((btn) => (
+                        <Link to={btn.to} className={`flex items-center py-[10px] pl-[20px] w-[20vw] text-black cursor-pointer text-left hover:bg-gray-200 hover:text-black hover:no-underline ${
+                                location.pathname === btn.to ? 'bg-blue-100 border-r-[5px] border-blue-900' : ''
+                            }`} key={btn.label}>
+                            <btn.icon className='text-xl mr-[10px]'/>
+                            <h1 className="font-bold">{btn.label}</h1>
+                        </Link>
+                    ))}
+                </nav>
+            </div>
+            <div className='flex flex-col items-center p-[5px] lg:flex-row items-center '>
+                <FaUserCircle className='text-6xl p-[5px]'/>
                 <div>
-                    <h4 className='text-[10px] font-light p-4'>ETUDIANT PORTAL</h4>
-                    <nav className="flex flex-col w-auto">
-                        {buttonsMenu.map((btn) => (
-                            <Link to={btn.to} className={`flex items-center py-[10px] pl-[20px] w-[20vw] text-black cursor-pointer text-left hover:bg-gray-200 hover:text-black hover:no-underline ${
-                                    location.pathname === btn.to ? 'bg-[#21a3df] border-r-[5px] border-[#3e1eaf]' : ''
-                                }`} key={btn.label}>
-                                <btn.icon className='text-xl mr-[10px]'/>
-                                <h1 className="font-bold">{btn.label}</h1>
-                            </Link>
-                        ))}
-                    </nav>
+                    <h1 className='font-bold text-xl pt-[5px] pl-[10px] pb-[0px] pr-[5px]'>nomEtudiant</h1>
+                    <h6 className='font-light text-base pt-[0px] pl-[10px] pb-[5px] pr-[5px]'>Matricule</h6>
                 </div>
-                <div className='flex flex-col items-center p-[5px] lg:flex-row items-center '>
-                    <FaUserCircle className='text-6xl p-[5px]'/>
-                    <div>
-                        <h1 className='font-bold text-xl pt-[5px] pl-[10px] pb-[0px] pr-[5px]'>nomEtudiant</h1>
-                        <h6 className='font-light text-base pt-[0px] pl-[10px] pb-[5px] pr-[5px]'>Matricule</h6>
-                    </div>
-                </div>                
-            </div> 
-        </div>
+            </div>                
+        </div>         
     );
 }

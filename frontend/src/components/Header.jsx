@@ -1,4 +1,4 @@
-import { FaBell, FaUser, FaBars, FaTimes, FaHome, FaBookmark, FaBook, FaList, FaEnvelope, FaUserCircle } from "react-icons/fa";
+import { FaRegBell, FaUserCircle, FaBars, FaTimes, FaHome, FaBookmark, FaBook, FaList, FaEnvelope, FaRegUserCircle } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom"
 
@@ -37,16 +37,16 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="flex justify-between align-items-center pt-[5px] pl-[20px] pb-0 pr-[20px] w-[100%] h-[6vh]">
+    <header className="flex justify-between align-items-center pt-[5px] pl-[20px] pb-0 pr-[20px] h-[50px]">
       <div className='flex items-center px-[10px] py-[5px]'>
-        <h3 className='font-bold'>UniLib</h3>
+        <h3 className=''>Biblio <span className="font-bold">ENSPD</span></h3>
       </div>      
       <div className='flex items-center justify-between'>
         <button className='px-[10px] py-[5px] hidden md:block'>
-          <FaBell className='text-xl' />
+          <FaRegBell className='text-xl' />
         </button>
         <button className='px-[10px] py-[5px] hidden md:block'> 
-          <FaUser className='text-xl' />
+          <FaRegUserCircle className='text-xl' />
         </button>
         <button className="px-[10px] py-[5px] md:hidden focus:outline-none" onClick={toggleMenu} aria-label="Toggle menu">
           {menuOpen ? (
@@ -68,7 +68,7 @@ export default function Header() {
                   to={btn.to}
                   className={`flex items-center gap-2 ${
                     location.pathname === btn.to
-                      ? 'bg-[#21a3df] text-white border-r-[5px] border-[#3e1eaf]'
+                      ? 'bg-blue-100 text-black border-r-[5px] border-blue-900'
                       : 'text-black'
                   } px-2 py-1 rounded`}
                   onClick={() => setMenuOpen(false)}
@@ -89,10 +89,10 @@ export default function Header() {
             </div> 
             <div>
               <button className='px-[10px] py-[5px]'>
-                <FaBell className='text-xl' />
+                <FaRegBell className='text-xl' />
               </button>
               <button className='px-[10px] py-[5px]'> 
-                <FaUser className='text-xl' />
+                <FaRegUserCircle className='text-xl' />
               </button>
             </div>
           </div>

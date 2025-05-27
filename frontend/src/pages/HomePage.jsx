@@ -1,31 +1,39 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Header from '../components/Header';
+import Footer from '../components/Footer';
 import Menu from '../components/Menu';
 import TableauDeBord from '../components/TableauDeBord';
 import CatalogueDesOuvrages from '../components/CatalogueDesOuvrages';
 import OuvragesEmpruntes from '../components/OuvragesEmpruntes';
 import OuvragesReserves from '../components/OuvragesReserves';
 import Messagerie from '../components/Messagerie';
+import HistoriqueEmprunt from '../components/HistoriqueEmprunt';
 
-// creation de la page d'accueil
-// cette page contient le header, le menu et le contenu de la page
-// le contenu de la page est dynamique et change en fonction de l'élément du menu sélectionné
-// le menu est composé de 5 éléments : Tableau de bord, Ouvrages Réservés, Ouvrages Empruntés, Catalogue des Ouvrages et Contacter la Bibliothécaire  
 export default function HomePage() {
   return (
-    <div className='homePage flex-column h-[100vh] w-[100vw]'>
-      <Header />
-      <div className='flex'>
-        <Menu />
-        <Routes>
-          <Route path="/" element={<TableauDeBord />} />
-          <Route path="/catalogue" element={<CatalogueDesOuvrages />} />
-          <Route path="/empruntes" element={<OuvragesEmpruntes />} />
-          <Route path="/reserves" element={<OuvragesReserves />} />
-          <Route path="/messagerie" element={<Messagerie />} />
-        </Routes>
-      </div>
+    <div className="h-screen w-screen">
+      <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-xl">
+        <Header />
+      </header>
+      <main className="flex pt-10 w-full h-[calc(100vh-2.5rem)]">
+        <div className='h-full bg-white'>  
+          <Menu />
+        </div> 
+         <div className=" flex-1 h-full bg-gray-100 overflow-y-auto">
+          <Routes>
+            <Route path="/" element={<TableauDeBord />} />
+            <Route path="/catalogue" element={<CatalogueDesOuvrages />} />
+            <Route path="/empruntes" element={<OuvragesEmpruntes />} />
+            <Route path="/reserves" element={<OuvragesReserves />} />
+            <Route path="/messagerie" element={<Messagerie />} />
+            <Route path="/historique" element={<HistoriqueEmprunt />} />
+          </Routes>
+        </div>  
+      </main>
+      <footer className="fixed bottom-0 left-0 w-full z-50 bg-white shadow-xl shadow">
+        <Footer />
+      </footer>
     </div>
   );
 }
