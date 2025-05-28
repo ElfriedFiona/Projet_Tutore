@@ -8,7 +8,7 @@ export default function OuvragesReserves(){
 
     return(
         <div className='w-full h-auto p-[20px]'>
-            <h1 className='text-2xl font-bold text-center mb-4'>Vos Ouvrages Réservés</h1>
+            <h1 className='text-2xl font-bold text-center mb-4'>VOS OUVRAGES RESERVES</h1>
             <div className="overflow-x-auto ">
                 <table className="w-full bg-white shadow-xl rounded-lg">
                     <thead>

@@ -9,6 +9,8 @@ import OuvragesEmpruntes from '../components/OuvragesEmpruntes';
 import OuvragesReserves from '../components/OuvragesReserves';
 import Messagerie from '../components/Messagerie';
 import HistoriqueEmprunt from '../components/HistoriqueEmprunt';
+import Notifications from '../components/Notifications';
+import Profil from '../components/Profil';
 
 export default function HomePage() {
   return (
@@ -20,7 +22,7 @@ export default function HomePage() {
         <div className='h-full bg-white'>  
           <Menu />
         </div> 
-         <div className=" flex-1 h-full bg-gray-100 overflow-y-auto">
+         <div className="flex-1 h-full bg-gray-100 overflow-y-auto">
           <Routes>
             <Route path="/" element={<TableauDeBord />} />
             <Route path="/catalogue" element={<CatalogueDesOuvrages />} />
@@ -28,6 +30,8 @@ export default function HomePage() {
             <Route path="/reserves" element={<OuvragesReserves />} />
             <Route path="/messagerie" element={<Messagerie />} />
             <Route path="/historique" element={<HistoriqueEmprunt />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/profil" element={<Profil />} />
           </Routes>
         </div>  
       </main>

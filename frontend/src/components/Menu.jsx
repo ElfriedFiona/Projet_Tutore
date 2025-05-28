@@ -20,7 +20,7 @@ export default function Menu() {
     ];
 
     return(
-        <div className='hidden md:flex flex-col block justify-between h-full'> 
+        <div className='hidden md:flex flex-col block justify-between h-full overflow-hidden'> 
             <div>
                 <h4 className='text-[10px] font-light p-6'>ETUDIANT PORTAL</h4>
                 <nav className="flex flex-col w-auto">

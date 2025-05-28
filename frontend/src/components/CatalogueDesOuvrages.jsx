@@ -9,7 +9,7 @@ export default function CatalogueDesOuvrages(){
     return(
         <div className='w-full h-auto p-[20px]'>
             <div className="flex flex-col items-center sm:flex-row justify-between">
-                <h1 className='text-2xl font-bold text-center mb-4'>Nos Ouvrages</h1>            
+                <h1 className='text-2xl font-bold text-center mb-4'>NOS OUVRAGES</h1>            
                 <div className="flex align-items-center ">
                     <input type="text" id="" name="" placeholder="Recherche" className="mr-[10px] px-[10px]"/>
                     <button className="bg-white px-[5px] hover:bg-gray-100"><FaSearch/></button>

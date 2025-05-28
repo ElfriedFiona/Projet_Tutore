@@ -8,7 +8,7 @@ export default function HistoriqueEmprunt(){
 
     return(
         <div className='w-full h-auto p-[20px]'>
-            <h1 className='text-2xl font-bold text-center mb-4'>Historique d'Emprunt</h1>
+            <h1 className='text-2xl font-bold text-center mb-4'>HISTORIQUE D'EMPRUNT</h1>
             <div className="overflow-x-auto ">
                 <table className="w-full bg-white shadow-xl rounded-lg">
                     <thead>

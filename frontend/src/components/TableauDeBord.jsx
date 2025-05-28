@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router-dom"
 export default function TableauDeBord(){
 
     return(
-        <div className='w-full h-auto sm:p-[20px]'>
+        <div className='w-full h-auto py-[20px] sm:p-[20px]'>
             <div className="flex flex-col items-center mb-[10px]" >
                 <h1 className="font-bold text-[15px] sm:text-[20px] ">Bienvenue, nomEtudiant !</h1>
                 <p className="font-light">Votre Espace Etudiant</p>

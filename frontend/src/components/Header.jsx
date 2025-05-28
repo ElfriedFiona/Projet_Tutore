@@ -1,6 +1,7 @@
-import { FaRegBell, FaUserCircle, FaBars, FaTimes, FaHome, FaBookmark, FaBook, FaList, FaEnvelope, FaRegUserCircle } from "react-icons/fa";
+import { FaRegBell, FaBars, FaTimes, FaHome, FaBookmark, FaBook, FaList, FaEnvelope, FaRegUserCircle } from "react-icons/fa";
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom"
+import { Link } from "react-router-dom";
+import MenuMobile from "./MenuMobile";
 
 // création de l'en-tete de la page web
 // l'en tete est composé du titre de la page et de deux boutons
@@ -9,22 +10,6 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   // fonction pour basculer l'état du menu
   const toggleMenu = () => setMenuOpen((prev) => !prev);
-  // utilise le hook useLocation pour obtenir l'emplacement actuel
-  // de la page dans l'application React Router
-  const location = useLocation();
-  // liste des boutons du menu
-  // chaque bouton a un label et une icône
-  // le label est le texte affiché sur le bouton
-  // l'icône est l'icône affichée sur le bouton   
-  // le label et l'icône sont stockés dans un tableau d'objets
-  const buttonsMenu = [
-      { label: 'Tableau de bord', icon: FaHome, to: "/" },
-      { label: 'Ouvrages Réservés', icon: FaBookmark, to: "/reserves" },
-      { label: 'Ouvrages Empruntés', icon: FaBook, to: "/empruntes" },
-      { label: 'Catalogue des Ouvrages', icon: FaList, to: "/catalogue" },
-      { label: 'Contacter la Bibliothècaire', icon: FaEnvelope, to: "/messagerie" },
-  ];
-
   // Fermer le menu mobile si la fenêtre devient large
   useEffect(() => {
     const handleResize = () => {
@@ -42,13 +27,13 @@ export default function Header() {
         <h3 className=''>Biblio <span className="font-bold">ENSPD</span></h3>
       </div>      
       <div className='flex items-center justify-between'>
-        <button className='px-[10px] py-[5px] hidden md:block'>
+        <Link to={"/notifications"} className='hover:bg-gray-100 px-[10px] py-[5px] hidden md:block'>
           <FaRegBell className='text-xl' />
-        </button>
-        <button className='px-[10px] py-[5px] hidden md:block'> 
+        </Link>
+        <Link to={'/profil'} className='hover:bg-gray-100 px-[10px] py-[5px] hidden md:block'> 
           <FaRegUserCircle className='text-xl' />
-        </button>
-        <button className="px-[10px] py-[5px] md:hidden focus:outline-none" onClick={toggleMenu} aria-label="Toggle menu">
+        </Link>
+        <button className="hover:bg-gray-100px-[10px] py-[5px] md:hidden focus:outline-none" onClick={toggleMenu} aria-label="Toggle menu">
           {menuOpen ? (
             <FaTimes className="text-3xl" />
           ) : (
@@ -56,47 +41,10 @@ export default function Header() {
           )}
         </button>
       </div>
-
-
-          {/* Exemple d'affichage conditionnel du menu mobile */}
+      
       {menuOpen && (
-        <nav className="md:hidden absolute top-[6vh] right-0 bg-white w-full shadow-md p-4">
-          <ul>
-            {buttonsMenu.map((btn) => (
-              <li key={btn.label} className="py-2 border-b border-gray-200 last:border-b-0">
-                <Link
-                  to={btn.to}
-                  className={`flex items-center gap-2 ${
-                    location.pathname === btn.to
-                      ? 'bg-blue-100 text-black border-r-[5px] border-blue-900'
-                      : 'text-black'
-                  } px-2 py-1 rounded`}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <btn.icon className="text-xl" />
-                  {btn.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <div className="flex flex-row items-center justify-between mt-4">
-            <div className='flex flex-row items-center p-[5px]'>
-              <FaUserCircle className='text-6xl p-[5px]'/>
-              <div>
-                  <h1 className='font-bold text-xl pt-[5px] pl-[10px] pb-[0px] pr-[5px]'>nomEtudiant</h1>
-                  <h6 className='font-light text-base pt-[0px] pl-[10px] pb-[5px] pr-[5px]'>Matricule</h6>
-              </div>
-            </div> 
-            <div>
-              <button className='px-[10px] py-[5px]'>
-                <FaRegBell className='text-xl' />
-              </button>
-              <button className='px-[10px] py-[5px]'> 
-                <FaRegUserCircle className='text-xl' />
-              </button>
-            </div>
-          </div>
-        </nav>
+        //Affichage du menu sur mobile
+        <MenuMobile/>
       )}
 
     </header>
