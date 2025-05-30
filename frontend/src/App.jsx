@@ -1,34 +1,35 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import DashboardLayout from './components/Dashboard/DashboardLayout';
+import DashboarLibraire from './pages/DashboarLibraire'
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import Dashboard from './pages/Libraire/Dashboard';
+import Students from './pages/Libraire/Students';
+import Categories from './pages/Libraire/Categories';
+import Loan from './pages/Libraire/LoanRequests';
+import ActiveLoans from './pages/Libraire/ActiveLoans';
+import BookManagement from './pages/Libraire/BookManagement';
+import Reservations from './pages/Libraire/Reservations';
+import Analytics from './pages/Libraire/Analytics';
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    
+      // <DashboarLibraire/>
+    <Router>
+    <DashboardLayout>
+    <Routes>
+    <Route path='/' element={<Dashboard/>} />
+    <Route path='/students' element={<Students/>} />
+    <Route path='/categories' element={<Categories />} />
+    <Route path='/loans' element={<Loan />} />
+    <Route path='/books' element={<BookManagement />} />
+    <Route path='/activeloans' element={<ActiveLoans />} />
+    <Route path='/reservations' element={<Reservations />} />
+    <Route path='/analytics' element={<Analytics />} />
+    </Routes>
+    </DashboardLayout>
+    </Router>
+    
   )
 }
 
