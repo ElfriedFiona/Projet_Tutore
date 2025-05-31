@@ -9,6 +9,7 @@ import ActiveLoans from './pages/Libraire/ActiveLoans';
 import BookManagement from './pages/Libraire/BookManagement';
 import Reservations from './pages/Libraire/Reservations';
 import Analytics from './pages/Libraire/Analytics';
+import Profil from './pages/Libraire/Profil';
 
 function App() {
 
@@ -26,6 +27,7 @@ function App() {
     <Route path='/activeloans' element={<ActiveLoans />} />
     <Route path='/reservations' element={<Reservations />} />
     <Route path='/analytics' element={<Analytics />} />
+    <Route path='/profil' element={<Profil />} />
     </Routes>
     </DashboardLayout>
     </Router>
