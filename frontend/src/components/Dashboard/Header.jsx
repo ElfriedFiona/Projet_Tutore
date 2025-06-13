@@ -21,7 +21,7 @@ const Header = ({ onMenuClick }) => {
   }, [])
 
   return (
-    <header className="flex items-center justify-between px-4 md:px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
+    <header className="flex items-center justify-between px-4 md:px-6 py-[14px] bg-white border-b border-gray-200 shadow-sm">
       
       {/* Left: Menu + Search */}
       <div className="flex items-center space-x-4 w-full md:w-1/2">
