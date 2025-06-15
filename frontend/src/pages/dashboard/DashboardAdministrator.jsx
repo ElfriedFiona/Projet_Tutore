@@ -6,16 +6,15 @@ import {
   Activity, Server, Lock, RefreshCw, Zap, Target,
   DollarSign, UserPlus, Edit, Trash2, Eye, Check, X
 } from 'lucide-react';
-import { useAuth } from '../../context/AppContext';
 import { formatPrice, formatNumber } from '../../utils/formatters';
 import UserManagement from './modules/UserManagement';
 import AccessRightsManagement from './modules/AccessRightsManagement';
 import SystemConfiguration from './modules/SystemConfiguration';
 import ReportsManagement from './modules/ReportsManagement';
 import BackupManagement from './modules/BackupManagement';
+import RoleNavigator from '../../components/demo/RoleNavigator';
 
 const DashboardAdministrator = () => {
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [isVisible, setIsVisible] = useState(false);
 
@@ -195,10 +194,12 @@ const DashboardAdministrator = () => {
       <span className="font-medium text-gray-900">{label}</span>
     </button>
   );
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-purple-50">
       <div className="p-6">
+        {/* Navigateur de rôles pour la démonstration */}
+        <RoleNavigator />
+        
         {/* En-tête */}
         <div className={`mb-8 transition-all duration-500 ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
           <div className="flex items-center justify-between">
@@ -208,7 +209,7 @@ const DashboardAdministrator = () => {
                 Tableau de Bord Administrateur
               </h1>
               <p className="text-gray-600 mt-2">
-                Bonjour {user?.firstName}, contrôlez l'ensemble du système
+                Bonjour Administrateur, contrôlez l'ensemble du système
               </p>
             </div>
             <div className="text-right">

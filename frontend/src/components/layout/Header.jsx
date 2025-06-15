@@ -112,21 +112,21 @@ const Header = () => {
                 to="/"
                 className={navLinkStyle(activeMenu === 'home')}
               >
-                <span className="hidden lg:inline">Accueil</span>
+                <span className="hidden md:inline">Accueil</span>
                 {activeMenu === 'home' && activeUnderline}
               </Link>
               <Link
                 to="/catalog"
                 className={navLinkStyle(activeMenu === 'catalog')}
               >
-                <span className="hidden lg:inline">Catalogue</span>
+                <span className="hidden md:inline">Catalogue</span>
                 {activeMenu === 'catalog' && activeUnderline}
               </Link>
               <Link
                 to="/contact"
                 className={navLinkStyle(activeMenu === 'contact')}
               >
-                <span className="hidden lg:inline">Contact</span>
+                <span className="hidden md:inline">Contact</span>
                 {activeMenu === 'contact' && activeUnderline}
               </Link>
             </nav>

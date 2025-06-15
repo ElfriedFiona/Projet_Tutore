@@ -5,14 +5,13 @@ import {
   BarChart3, FileText, Star, TrendingUp, Clock, 
   UserPlus, BookMarked, Receipt, Settings
 } from 'lucide-react';
-import { useAuth } from '../../context/AppContext';
 import { formatPrice } from '../../utils/formatters';
 import CatalogManagement from './modules/CatalogManagement';
 import LoanManagement from './modules/LoanManagement';
 import FineManagement from './modules/FineManagement';
+import RoleNavigator from '../../components/demo/RoleNavigator';
 
 const DashboardLibrarian = () => {
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [isVisible, setIsVisible] = useState(false);
 
@@ -148,10 +147,12 @@ const DashboardLibrarian = () => {
       <span className="font-medium text-gray-900">{label}</span>
     </button>
   );
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50">
       <div className="p-6">
+        {/* Navigateur de rôles pour la démonstration */}
+        <RoleNavigator />
+        
         {/* En-tête */}
         <div className={`mb-8 transition-all duration-500 ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
           <div className="flex items-center justify-between">
@@ -161,7 +162,7 @@ const DashboardLibrarian = () => {
                 Tableau de Bord Bibliothécaire
               </h1>
               <p className="text-gray-600 mt-2">
-                Bonjour {user?.firstName}, gérez efficacement votre bibliothèque
+                Bonjour Bibliothécaire, gérez efficacement votre bibliothèque
               </p>
             </div>
             <div className="text-right">

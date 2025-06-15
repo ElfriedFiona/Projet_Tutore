@@ -1,21 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  BarChart3, PieChart, TrendingUp, Users, BookOpen, Receipt,
-  Calendar, Download, Filter, Search, Eye, Settings,
+import React, { useState } from 'react';
+import {
+  BarChart3, TrendingUp, Users, BookOpen, Receipt,
+  Calendar, Download,
   Clock, Star, AlertTriangle, CheckCircle, FileText,
-  Printer, Mail, Share2, RefreshCw, ChevronDown,
+  Printer, RefreshCw,
   ArrowUpRight, ArrowDownRight, Minus
 } from 'lucide-react';
 import {
-  AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart as RechartsPieChart,
+  AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie,
   Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
-const ReportsManagement = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+const ReportsManagement = () => {  const [activeTab, setActiveTab] = useState('overview');
   const [selectedPeriod, setSelectedPeriod] = useState('7days');
   const [loading, setLoading] = useState(false);
-  const [reportData, setReportData] = useState({});
 
   // Données mock pour les graphiques
   const loansData = [
@@ -166,7 +164,7 @@ const ReportsManagement = () => {
             Statistiques détaillées et rapports d'activité
           </p>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <select
             value={selectedPeriod}
@@ -203,11 +201,10 @@ const ReportsManagement = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center ${
-                  activeTab === tab.id
+                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center ${activeTab === tab.id
                     ? 'border-primary-500 text-primary-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                  }`}
               >
                 <Icon className="w-4 h-4 mr-2" />
                 {tab.label}
@@ -222,33 +219,33 @@ const ReportsManagement = () => {
         <div className="space-y-6">
           {/* Statistiques principales */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard 
-              icon={BookOpen} 
-              title="Total Livres" 
+            <StatCard
+              icon={BookOpen}
+              title="Total Livres"
               value={stats.totalBooks.toLocaleString()}
               change="+24 ce mois"
               trend="up"
               color="primary"
             />
-            <StatCard 
-              icon={Users} 
-              title="Utilisateurs Actifs" 
+            <StatCard
+              icon={Users}
+              title="Utilisateurs Actifs"
               value={stats.totalUsers}
               change="+8 ce mois"
               trend="up"
               color="blue"
             />
-            <StatCard 
-              icon={Clock} 
-              title="Emprunts Actifs" 
+            <StatCard
+              icon={Clock}
+              title="Emprunts Actifs"
               value={stats.activeLoans}
               change="-5 cette semaine"
               trend="down"
               color="green"
             />
-            <StatCard 
-              icon={AlertTriangle} 
-              title="Retards" 
+            <StatCard
+              icon={AlertTriangle}
+              title="Retards"
               value={stats.overdueLoans}
               change="Stable"
               trend="stable"
@@ -272,21 +269,19 @@ const ReportsManagement = () => {
                   <Area type="monotone" dataKey="retours" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
-
-            {/* Répartition par catégories */}
+            </div>            {/* Répartition par catégories */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Emprunts par Catégorie</h3>
               <ResponsiveContainer width="100%" height={300}>
-                <RechartsPieChart>
-                  <Tooltip />
-                  <RechartsPieChart data={categoriesData} cx="50%" cy="50%" outerRadius={80} fill="#8884d8" dataKey="value">
+                <PieChart>
+                  <Pie data={categoriesData} cx="50%" cy="50%" outerRadius={80} fill="#8884d8" dataKey="value">
                     {categoriesData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
-                  </RechartsPieChart>
+                  </Pie>
+                  <Tooltip />
                   <Legend />
-                </RechartsPieChart>
+                </PieChart>
               </ResponsiveContainer>
             </div>
           </div>
@@ -363,25 +358,25 @@ const ReportsManagement = () => {
 
           {/* Statistiques détaillées */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatCard 
-              icon={BookOpen} 
-              title="Emprunts Aujourd'hui" 
+            <StatCard
+              icon={BookOpen}
+              title="Emprunts Aujourd'hui"
               value="15"
               change="+3 vs hier"
               trend="up"
               color="primary"
             />
-            <StatCard 
-              icon={CheckCircle} 
-              title="Retours à Temps" 
+            <StatCard
+              icon={CheckCircle}
+              title="Retours à Temps"
               value="92%"
               change="+2% vs semaine dernière"
               trend="up"
               color="green"
             />
-            <StatCard 
-              icon={Clock} 
-              title="Durée Moyenne" 
+            <StatCard
+              icon={Clock}
+              title="Durée Moyenne"
               value="11 jours"
               change="-1 jour vs mois dernier"
               trend="down"
@@ -411,33 +406,33 @@ const ReportsManagement = () => {
 
           {/* Statistiques utilisateurs */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <StatCard 
-              icon={Users} 
-              title="Étudiants" 
+            <StatCard
+              icon={Users}
+              title="Étudiants"
               value="167"
               change="+8 ce mois"
               trend="up"
               color="blue"
             />
-            <StatCard 
-              icon={Users} 
-              title="Enseignants" 
+            <StatCard
+              icon={Users}
+              title="Enseignants"
               value="48"
               change="+1 ce mois"
               trend="up"
               color="green"
             />
-            <StatCard 
-              icon={CheckCircle} 
-              title="Comptes Actifs" 
+            <StatCard
+              icon={CheckCircle}
+              title="Comptes Actifs"
               value="96%"
               change="Stable"
               trend="stable"
               color="primary"
             />
-            <StatCard 
-              icon={Clock} 
-              title="Dernière Connexion" 
+            <StatCard
+              icon={Clock}
+              title="Dernière Connexion"
               value="2h"
               change="Moyenne quotidienne"
               trend="stable"
@@ -462,53 +457,51 @@ const ReportsManagement = () => {
                   <Bar dataKey="amount" fill="#ff7300" />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            </div>            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Nombre d'Incidents</h3>
               <ResponsiveContainer width="100%" height={300}>
-                <RechartsPieChart>
-                  <Tooltip />
-                  <RechartsPieChart data={finesData} cx="50%" cy="50%" outerRadius={80} fill="#8884d8" dataKey="count">
+                <PieChart>
+                  <Pie data={finesData} cx="50%" cy="50%" outerRadius={80} fill="#8884d8" dataKey="count">
                     {finesData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={['#ff7300', '#8884d8', '#82ca9d'][index]} />
                     ))}
-                  </RechartsPieChart>
+                  </Pie>
+                  <Tooltip />
                   <Legend />
-                </RechartsPieChart>
+                </PieChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           {/* Statistiques amendes */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <StatCard 
-              icon={Receipt} 
-              title="Total Amendes" 
+            <StatCard
+              icon={Receipt}
+              title="Total Amendes"
               value="202 000 FCFA"
               change="+15 000 ce mois"
               trend="up"
               color="red"
             />
-            <StatCard 
-              icon={Clock} 
-              title="En Attente" 
+            <StatCard
+              icon={Clock}
+              title="En Attente"
               value="45 000 FCFA"
               change="12 cas"
               trend="stable"
               color="yellow"
             />
-            <StatCard 
-              icon={CheckCircle} 
-              title="Payées" 
+            <StatCard
+              icon={CheckCircle}
+              title="Payées"
               value="157 000 FCFA"
               change="89% du total"
               trend="up"
               color="green"
             />
-            <StatCard 
-              icon={AlertTriangle} 
-              title="Moyenne/Incident" 
+            <StatCard
+              icon={AlertTriangle}
+              title="Moyenne/Incident"
               value="1 960 FCFA"
               change="+200 vs mois dernier"
               trend="up"
@@ -581,11 +574,10 @@ const ReportsManagement = () => {
                     <p className="text-xs text-gray-500">Prochaine exécution : {report.nextRun}</p>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      report.status === 'active' 
-                        ? 'bg-green-100 text-green-800' 
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${report.status === 'active'
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-yellow-100 text-yellow-800'
-                    }`}>
+                      }`}>
                       {report.status === 'active' ? 'Actif' : 'Suspendu'}
                     </span>
                     <button className="p-1 text-gray-400 hover:text-gray-600">

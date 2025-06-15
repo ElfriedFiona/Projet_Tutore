@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+*{
+  outline: 1px dashed red;
+}
+
 :root {
   font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -143,7 +147,6 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  padding-top: 64px;
 }
 
 h1 {
@@ -791,4 +794,40 @@ button {
     background: rgba(0, 0, 0, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
+}
+
+/* Transitions fluides pour le layout dashboard */
+.dashboard-content-transition {
+  transition: margin-left 0.3s ease-in-out;
+}
+
+/* Breakpoints responsifs pour la sidebar */
+@media (max-width: 768px) {
+  .dashboard-sidebar-mobile {
+    transform: translateX(-100%);
+  }
+  
+  .dashboard-sidebar-mobile.open {
+    transform: translateX(0);
+  }
+  
+  .dashboard-content-mobile {
+    margin-left: 0 !important;
+  }
+}
+
+/* Animation pour le contenu principal */
+@keyframes slideInContent {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.dashboard-content-animate {
+  animation: slideInContent 0.3s ease-out;
 }

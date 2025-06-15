@@ -202,7 +202,7 @@ const Home = () => {
     : popularBooks.filter(book => book.category === selectedCategory);
 
   return (
-    <div className="min-h-screen">
+    <div> {/* Supprimer la classe h-screen */}
       {/* 1. Carousel Hero avec Barre de Recherche */}
       <section className="relative h-screen overflow-hidden">
         {/* Carousel */}

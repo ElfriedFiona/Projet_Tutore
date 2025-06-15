@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AppContext';
+import { Calendar, Clock, Eye, X, CheckCircle, AlertTriangle, BookOpen, User } from 'lucide-react';
+import ResponsiveDashboardContainer, { 
+  ResponsiveDashboardGrid, 
+  ResponsiveDashboardHeader,
+  ResponsiveDashboardCard,
+  ResponsiveDashboardTabs,
+  ResponsiveDashboardActions
+} from '../../components/dashboard/ResponsiveDashboardContainer';
+import useResponsiveDashboard from '../../hooks/useResponsiveDashboard';
 
 const DashboardReservations = () => {
-  const { user: _user } = useAuth();
   const [activeTab, setActiveTab] = useState('active');
   const [animate, setAnimate] = useState(false);
 
@@ -303,8 +310,8 @@ const DashboardReservations = () => {
               onClick={() => setActiveTab('active')}
               className={`flex-1 py-3 px-6 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden ${
                 activeTab === 'active'
-                  ? 'bg-gradient-to-r from-primary-500 to-primary-700 text-white shadow-lg transform scale-105'
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'
+                  ? 'bg-gradient-to-r from-primary-500 to-primary-700 text-white shadow-lg transform'
+                  : 'text-gray-600 hover:text-neutral-700 hover:bg-primary-50'
               }`}
             >
               {activeTab === 'active' && (
@@ -316,8 +323,8 @@ const DashboardReservations = () => {
               onClick={() => setActiveTab('history')}
               className={`flex-1 py-3 px-6 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden ${
                 activeTab === 'history'
-                  ? 'bg-gradient-to-r from-primary-500 to-primary-700 text-white shadow-lg transform scale-105'
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'
+                  ? 'bg-gradient-to-r from-primary-500 to-primary-700 text-white shadow-lg transform'
+                  : 'text-gray-600 hover:text-neutral-700 hover:bg-primary-50'
               }`}
             >
               {activeTab === 'history' && (

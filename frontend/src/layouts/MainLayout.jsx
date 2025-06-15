@@ -8,17 +8,25 @@ import Breadcrumbs from '../components/common/Breadcrumbs';
 
 export default function MainLayout({ children }) {
   return (
-    <div className="flex flex-col min-h-screen bg-white text-neutral-800">
+    <div className="min-h-screen flex flex-col bg-white text-neutral-800">
+      {/* Header fixe */}
       <Header />
-      <div className="sm:pt-5">
-        <Breadcrumbs className="my-4" />
-        <main className="flex-grow sm:py-3 md:py-4 px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto w-full">
-            {children || <Outlet />}
-          </div>
-        </main>
+      <div className="flex-1">
+        {/* Contenu principal qui s'étend */}
+        <div className="pt-16 sm:pt-16 md:pt-20 lg:pt-24 ">
+          <Breadcrumbs className="my-4 mx-8" />
+          <main className="px-4 sm:px-6 lg:px-8 pb-8">
+            <div className="mx-auto w-full">
+              {children || <Outlet />}
+            </div>
+          </main>
+        </div>
       </div>
+      
+      {/* Footer qui reste en bas */}
       <Footer />
+      
+      {/* Composants supplémentaires */}
       <BackToTopButton />
       <ToastContainer />
     </div>

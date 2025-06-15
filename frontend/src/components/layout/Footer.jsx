@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { ResponsiveContainer, ResponsiveSection } from '../common/ResponsiveComponents';
 import './Newsletter.css';
 import  footerBg from '/images/footer-bg.png';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   
@@ -20,7 +18,7 @@ const Footer = () => {
     // Reset the subscription message after 5 seconds
     setTimeout(() => setSubscribed(false), 5000);
   };  return (
-    <footer className="bg-primary-500 text-white relative overflow-hidden bg-cover bg-center fixed-light-theme" style={{ backgroundImage: `url(${footerBg})` }}>
+    <footer className="bg-primary-500 text-white relative overflow-hidden bg-cover bg-center fixed-light-theme">
       {/* Decorative wave element */}
       <div className="absolute top-0 left-0 w-full">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" className="text-white fill-current opacity-10">
@@ -206,13 +204,12 @@ const Footer = () => {
                     </svg>
                     Contact
                   </Link>
-                </li>
-                <li>
-                  <Link to={user ? "/favorites" : "/login"} className="text-primary-100 hover:text-secondary-400 transition-colors flex items-center group">
+                </li>                <li>
+                  <Link to="/login" className="text-primary-100 hover:text-secondary-400 transition-colors flex items-center group">
                     <svg className="w-4 h-4 mr-2 transition-transform duration-300 transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
                     </svg>
-                    {user ? "Mes Favoris" : "Connexion"}
+                    Connexion
                   </Link>
                 </li>
               </ul>

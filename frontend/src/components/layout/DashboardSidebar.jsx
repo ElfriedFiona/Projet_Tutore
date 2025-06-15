@@ -1,22 +1,49 @@
-import React, { useState } from 'react';
-import { NavLink, Link } from 'react-router-dom'; // Ajouter Link ici
-import { useAuth } from '../../context/AppContext';
+import React, { useState, useEffect } from 'react';
+import { NavLink, Link } from 'react-router-dom';
+import { Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import useBreakpoint from '../../hooks/useBreakpoint';
+import '../../styles/sidebar.css';
 
 const DashboardSidebar = () => {
-  const { user, logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userType, setUserType] = useState('student');
 
+  // Hook pour gérer les breakpoints responsives
+  const { isMobile, isTablet, isDesktop, breakpoint } = useBreakpoint();  // Gérer le resize pour fermer le menu mobile automatiquement et ajuster l'état
+  useEffect(() => {
+    // Fermer le menu mobile automatiquement sur desktop
+    if (isDesktop) {
+      setIsMobileMenuOpen(false);
+    }
+  }, [isDesktop]);
+
+  // Mettre à jour la marge du contenu principal selon l'état et la taille d'écran
+  useEffect(() => {
+    const updateContentMargin = () => {
+      const main = document.querySelector('main');
+      if (!main) return;
+
+      if (isDesktop) {
+        // Desktop: marge selon l'état collapsed
+        main.style.marginLeft = isCollapsed ? '4rem' : '16rem'; // w-16 = 4rem, w-64 = 16rem
+        main.style.transition = 'margin-left 0.3s ease-in-out';
+      } else if (isTablet) {
+        // Tablet: sidebar collapsée fixe
+        main.style.marginLeft = '4rem'; // w-16 = 4rem
+        main.style.transition = 'margin-left 0.3s ease-in-out';
+      } else {
+        // Mobile: pas de marge (overlay)
+        main.style.marginLeft = '0';
+        main.style.transition = 'margin-left 0.3s ease-in-out';
+      }
+    };
+
+    updateContentMargin();
+  }, [isCollapsed, isDesktop, isTablet, isMobile]);
+
+  // Menu items for different user types
   const studentMenuItems = [
-    {
-      name: 'Tableau de bord',
-      path: '/dashboard',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v14l-6-3-6 3V5z" />
-        </svg>
-      )
-    },
     {
       name: 'Catalogue',
       path: '/catalog',
@@ -65,20 +92,12 @@ const DashboardSidebar = () => {
       )
     }
   ];
+
   const teacherMenuItems = [
     ...studentMenuItems,
     {
       name: 'Mes Recommandations',
       path: '/dashboard/recommendations',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-        </svg>
-      ),
-      badge: '5'
-    }, {
-      name: 'Demandes d\'Acquisition',
-      path: '/dashboard/acquisitions',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -143,6 +162,15 @@ const DashboardSidebar = () => {
       path: '/dashboard/administrator',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      )
+    },
+    {
+      name: 'Système & Sécurité',
+      path: '/dashboard/system',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
       )
@@ -166,18 +194,8 @@ const DashboardSidebar = () => {
       )
     },
     {
-      name: 'Configuration Système',
-      path: '/dashboard/system-config',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      )
-    },
-    {
-      name: 'Rapports Système',
-      path: '/dashboard/system-reports',
+      name: 'Rapports',
+      path: '/dashboard/reports',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -189,7 +207,7 @@ const DashboardSidebar = () => {
       path: '/dashboard/backups',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
         </svg>
       )
     },
@@ -206,11 +224,11 @@ const DashboardSidebar = () => {
 
   // Determine menu items based on user role
   const getMenuItems = () => {
-    if (user?.role === 'admin' || user?.role === 'administrator') {
+    if (userType === 'admin' || userType === 'administrator') {
       return administratorMenuItems;
-    } else if (user?.role === 'librarian') {
+    } else if (userType === 'librarian') {
       return librarianMenuItems;
-    } else if (user?.userType === 'teacher' || user?.role === 'teacher') {
+    } else if (userType === 'teacher') {
       return teacherMenuItems;
     } else {
       return studentMenuItems;
@@ -219,135 +237,404 @@ const DashboardSidebar = () => {
 
   const menuItems = getMenuItems();
 
-  return (
-    <div className={`bg-white shadow-xl border-r border-gray-200 transition-all duration-300 ${
-      isCollapsed ? 'w-18' : 'w-64'
-    } flex flex-col min-h-screen`}>
-      
-      {/* En-tête de la sidebar avec logo */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-primary-600">
-        {/* Logo identique au Header */}
-        <Link 
-          to="/" 
-          className="text-lg sm:text-xl font-semibold flex items-center group transform hover:scale-105 transition-transform duration-300"
-        >
-          <span className="text-secondary-400 mr-1 group-hover:text-white transition-colors duration-300">
-            Biblio
-          </span>
-          <span className="text-white group-hover:text-secondary-400 transition-colors duration-300">
-            ENSPD
-          </span>
-        </Link>
-        
-        {/* Bouton pour réduire/agrandir la sidebar */}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2 rounded-lg text-primary hover:bg-primary-700 transition-colors duration-200"
-          aria-label={isCollapsed ? "Agrandir le menu" : "Réduire le menu"}
-        >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            {isCollapsed ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7M19 19l-7-7 7-7" />
-            )}
-          </svg>
-        </button>
-      </div>
+  // Mock user data for display - utilise l'état local au lieu du contexte
+  const mockUser = {
+    firstName: userType === 'admin' || userType === 'administrator' ? 'Admin' :
+      userType === 'librarian' ? 'Bibliothécaire' :
+        userType === 'teacher' ? 'Professeur' : 'Étudiant',
+    lastName: 'Test',
+    userType: userType
+  };
 
-      {/* Profil utilisateur */}
-      {!isCollapsed && (
+  // Fonction pour changer le type d'utilisateur (navigation manuelle)
+  const handleUserTypeChange = (newUserType) => {
+    setUserType(newUserType);
+  };
+
+  // Fonction pour gérer le toggle de la sidebar desktop
+  const handleToggle = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  // Fonction pour gérer le menu mobile
+  const handleMobileMenuToggle = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  // Fermer le menu mobile lors du clic sur un lien
+  const handleMenuItemClick = () => {
+    setIsMobileMenuOpen(false);
+  };
+  return (
+    <>
+      {/* Bouton menu burger pour mobile/tablet (visible jusqu'à md) */}      
+      <button
+        className={`
+          md:hidden fixed top-4 left-4 z-[9999] p-3 
+          bg-gradient-to-r from-primary-500 to-primary-600 
+          rounded-lg shadow-lg border border-primary-200
+          hover:from-primary-600 hover:to-primary-700
+          transform transition-all duration-300 ease-in-out
+          ${isMobileMenuOpen ? 'hidden' : 'hover:scale-105'}
+          focus:outline-none focus:ring-4 focus:ring-primary-200
+          animate-pulse-glow
+        `}
+        onClick={handleMobileMenuToggle}
+        aria-label={isMobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+        aria-expanded={isMobileMenuOpen}
+      >
+        <div className={`transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-180' : ''}`}>
+          {isMobileMenuOpen ? (
+            <X className="w-6 h-6 text-white" />
+          ) : (
+            <Menu className="w-6 h-6 text-white" />
+          )}
+        </div>
+      </button>
+
+      {/* Overlay pour mobile/tablet avec animation */}
+      {isMobileMenuOpen && (
+        <div
+          className={`
+            lg:hidden fixed inset-0 z-40
+            bg-black transition-all duration-300 ease-in-out
+            ${isMobileMenuOpen ? 'bg-opacity-50' : 'bg-opacity-0'}
+          `}
+          onClick={handleMobileMenuToggle}
+        />
+      )}      
+      
+      {/* Sidebar Mobile/Tablet - Overlay jusqu'à lg avec largeur responsive */}
+      <div className={`
+        lg:hidden fixed inset-y-0 left-0 z-50 
+        w-64 md:w-72
+        bg-white border-r border-gray-200 shadow-2xl
+        transform transition-all duration-300 ease-in-out
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        flex flex-col
+      `}>
+        {/* Header mobile */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-primary-600">
+          <Link to="/" className="flex items-center">
+            <div className="flex flex-col items-center">
+              <span className="text-secondary-400 text-lg">Biblio</span>
+              <span className="text-white text-xl">ENSPD</span>
+            </div>
+          </Link>
+          <button
+            onClick={handleMobileMenuToggle}
+            className="p-2 rounded-lg text-neutral-500 hover:bg-primary-700 transition-colors"
+            aria-label="Fermer le menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Profil utilisateur mobile */}
         <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 mb-3">
             <div className="w-10 h-10 bg-gradient-to-r from-primary-400 to-secondary-500 rounded-full flex items-center justify-center">
               <span className="text-white font-semibold">
-                {user?.firstName?.[0]}{user?.lastName?.[0]}
+                {mockUser?.firstName?.[0]}{mockUser?.lastName?.[0]}
               </span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">
-                {user?.firstName} {user?.lastName}
+                {mockUser?.firstName} {mockUser?.lastName}
               </p>
               <p className="text-xs text-gray-500 truncate">
-                {user?.userType === 'student' ? 'Étudiant' : 'Enseignant'}
+                {mockUser?.userType === 'student' ? 'Étudiant' :
+                  mockUser?.userType === 'teacher' ? 'Enseignant' :
+                    mockUser?.userType === 'librarian' ? 'Bibliothécaire' : 'Administrateur'}
               </p>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Menu de navigation */}
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
-          {menuItems.map((item) => (
-            <li key={item.path}>
-              <NavLink
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
-                    isActive
+          {/* Sélecteur de rôle mobile */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Simuler le rôle :
+            </label>
+            <select
+              value={userType}
+              onChange={(e) => handleUserTypeChange(e.target.value)}
+              className="w-full text-xs bg-gray-50 border border-gray-200 rounded-md px-2 py-1 focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+            >
+              <option value="student">👨‍🎓 Étudiant</option>
+              <option value="teacher">👨‍🏫 Enseignant</option>
+              <option value="librarian">📚 Bibliothécaire</option>
+              <option value="administrator">🛡️ Administrateur</option>
+            </select>
+          </div>
+        </div>        {/* Navigation mobile avec scrollbar personnalisée */}
+        <nav className="flex-1 p-4 overflow-y-auto sidebar-nav">
+          <ul className="space-y-2">
+            {menuItems.map((item, index) => (
+              <li key={item.path} style={{ animationDelay: `${index * 0.1}s` }}>
+                <NavLink
+                  to={item.path}
+                  onClick={handleMenuItemClick}
+                  className={({ isActive }) =>
+                    `nav-item flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${isActive
                       ? 'bg-gradient-to-r from-primary-500 to-secondary-600 text-white shadow-lg'
                       : 'text-gray-700 hover:bg-primary-50 hover:text-primary-700'
-                  }`
-                }
-              >
-                <span className="flex-shrink-0">{item.icon}</span>
-                {!isCollapsed && (
-                  <>
-                    <span className="flex-1 font-medium">{item.name}</span>
-                    {item.badge && (
-                      <span className="bg-secondary-500 text-white text-xs px-2 py-0.5 rounded-full">
-                        {item.badge}
-                      </span>
-                    )}
-                  </>
-                )}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
+                    }`
+                  }
+                >
+                  <span className="flex-shrink-0">{item.icon}</span>
+                  <span className="font-medium">{item.name}</span>
+                  {item.badge && (
+                    <span className="ml-auto bg-red-500 text-white text-xs font-medium px-2 py-1 rounded-full badge-bounce">
+                      {item.badge}
+                    </span>
+                  )}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-      {/* Pied de la sidebar */}
-      <div className="p-4 border-t border-gray-200">
-        <button
-          onClick={logout}
-          className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-all duration-200 w-full ${
-            isCollapsed ? 'justify-center' : ''
-          }`}
-        >
-          <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          {!isCollapsed && <span className="font-medium">Déconnexion</span>}
-        </button>
-
-        {/* Footer avec branding */}
-        <div className="p-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-primary-50">
-          <div className="text-center">
-            <div className="mb-2">
-              <span className="inline-flex items-center text-sm text-gray-600">
-                <svg className="h-4 w-4 mr-1 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h6m-6 4h6m-6 4h6" />
-                </svg>
-                ENSPD Library
-              </span>
-            </div>
-            <div className="flex items-center justify-center space-x-1 text-xs text-gray-400">
-              <span className="text-secondary-500 font-medium">Biblio</span>
-              <span>ENSPD</span>
-              <span>© 2024</span>
-            </div>
-          </div>
-        </div>
-
-        {!isCollapsed && (
+        {/* Footer mobile */}
+        <div className="p-4 border-t border-gray-200">
+          <button
+            onClick={() => {
+              handleMenuItemClick();
+              window.location.href = '/';
+            }}
+            className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-all duration-200 w-full"
+          >
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span className="font-medium">Retour à l'accueil</span>
+          </button>
           <div className="mt-3 text-xs text-gray-500 text-center">
             Version 1.0.0
-          </div>
-        )}
+          </div>        </div>
       </div>
-    </div>
+
+      {/* Sidebar Tablet - visible de md à lg (768px à 1024px) */}
+      <div className={`
+        hidden md:flex lg:hidden
+        w-16 fixed left-0 top-0 h-screen z-50
+        bg-white border-r border-gray-200 shadow-lg shadow-gray-300/50
+        transition-all duration-300 ease-in-out
+        flex-col
+      `}>
+        {/* En-tête tablet avec logo compact */}
+        <div className="flex flex-col py-4 justify-start items-center border-b border-gray-200 bg-primary-600">
+          <Link
+            to="/"
+            className="font-semibold flex items-center group transform hover:scale-105 transition-all duration-300 justify-center py-2"
+          >
+            <div className="flex items-center justify-center w-10 h-10 bg-secondary-600 rounded-lg group-hover:bg-white transition-colors duration-300">
+              <span className="text-white text-lg font-bold group-hover:text-secondary-600 transition-colors duration-300">
+                B
+              </span>
+            </div>
+          </Link>
+        </div>        {/* Navigation tablet - icônes seulement avec animations */}
+        <nav className="flex-1 p-2 overflow-y-auto sidebar-nav">
+          <ul className="space-y-2">
+            {menuItems.map((item, index) => (
+              <li key={item.path} style={{ animationDelay: `${index * 0.05}s` }}>
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `nav-item flex items-center justify-center p-3 rounded-lg transition-all duration-200 group relative sidebar-focus ${isActive
+                      ? 'bg-gradient-to-r from-primary-500 to-secondary-600 text-white shadow-lg'
+                      : 'text-gray-700 hover:bg-primary-50 hover:text-primary-700'
+                    }`
+                  }
+                  title={item.name}
+                >
+                  <span className="flex-shrink-0">{item.icon}</span>
+                  {item.badge && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-medium w-5 h-5 rounded-full flex items-center justify-center badge-bounce">
+                      {item.badge}
+                    </span>
+                  )}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Footer tablet */}
+        <div className="p-2 border-t border-gray-200">
+          <button
+            onClick={() => {
+              window.location.href = '/';
+            }}
+            className="flex items-center justify-center p-3 rounded-lg text-red-600 hover:bg-red-50 transition-all duration-200 w-full"
+            title="Retour à l'accueil"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Sidebar Desktop - visible à partir de lg */}
+      <div className={`
+        hidden lg:flex
+        ${isCollapsed ? 'w-18' : 'w-64'} 
+        fixed left-0 top-0 h-screen z-50
+        bg-white border-r border-gray-200 shadow-lg shadow-gray-300/50
+        transition-all duration-300 ease-in-out
+        flex-col
+      `}>
+        {/* En-tête de la sidebar avec logo desktop */}
+        <div className={`flex ${isCollapsed ? 'flex-col py-4 justify-start' : 'flex-row p-4 justify-between'} items-center border-b border-gray-200 bg-primary-600`}>
+          {/* Logo adaptatif */}
+          <Link
+            to="/"
+            className={`font-semibold flex items-center group transform hover:scale-105 transition-all duration-300 
+                       ${isCollapsed ? 'justify-center py-4' : ''}`}
+          >
+            <div className={`transition-all duration-300 ${isCollapsed ? 'transform scale-90' : ''}`}>
+              {!isCollapsed ? (
+                <div className="flex gap-1 items-center">
+                  <span className="text-secondary-400 text-lg group-hover:text-white transition-colors duration-300">
+                    Biblio
+                  </span>
+                  <span className="text-white text-xl group-hover:text-secondary-400 transition-colors duration-300">
+                    ENSPD
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center w-10 h-10 bg-secondary-600 rounded-lg group-hover:bg-white transition-colors duration-300">
+                  <span className="text-white text-lg font-bold group-hover:text-secondary-600 transition-colors duration-300">
+                    B
+                  </span>
+                </div>
+              )}
+            </div>
+          </Link>
+
+          {/* Bouton toggle sidebar desktop */}
+          {!isCollapsed && (
+            <button
+              onClick={handleToggle}
+              className="p-2 rounded-lg text-white hover:bg-primary-700 transition-all duration-300"
+              aria-label="Réduire le menu"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+
+        {/* Bouton d'expansion pour sidebar collapsée */}
+        {isCollapsed && (
+          <button
+            onClick={handleToggle}
+            className="absolute -right-3 top-20 p-1.5 bg-white border border-gray-200 rounded-full shadow-md hover:shadow-lg transition-all duration-300 z-20"
+            aria-label="Agrandir le menu"
+          >
+            <ChevronRight className="w-4 h-4 text-gray-600" />
+          </button>
+        )}
+
+        {/* Profil utilisateur desktop */}
+        {!isCollapsed && (
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-primary-400 to-secondary-500 rounded-full flex items-center justify-center">
+                <span className="text-white font-semibold">
+                  {mockUser?.firstName?.[0]}{mockUser?.lastName?.[0]}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {mockUser?.firstName} {mockUser?.lastName}
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  {mockUser?.userType === 'student' ? 'Étudiant' :
+                    mockUser?.userType === 'teacher' ? 'Enseignant' :
+                      mockUser?.userType === 'librarian' ? 'Bibliothécaire' : 'Administrateur'}
+                </p>
+              </div>
+            </div>
+
+            {/* Sélecteur de rôle desktop */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Simuler le rôle :
+              </label>
+              <select
+                value={userType}
+                onChange={(e) => handleUserTypeChange(e.target.value)}
+                className="w-full text-xs bg-gray-50 border border-gray-200 rounded-md px-2 py-1 focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="student">👨‍🎓 Étudiant</option>
+                <option value="teacher">👨‍🏫 Enseignant</option>
+                <option value="librarian">📚 Bibliothécaire</option>
+                <option value="administrator">🛡️ Administrateur</option>
+              </select>
+            </div>
+          </div>
+        )}        {/* Navigation desktop avec animations */}
+        <nav className="flex-1 p-4 overflow-y-auto sidebar-nav">
+          <ul className="space-y-2">
+            {menuItems.map((item, index) => (
+              <li key={item.path} style={{ animationDelay: `${index * 0.1}s` }}>
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 group sidebar-focus ${isActive
+                      ? 'bg-gradient-to-r from-primary-500 to-secondary-600 text-white shadow-lg'
+                      : 'text-gray-700 hover:bg-primary-50 hover:text-primary-700'
+                    }`
+                  }
+                  title={isCollapsed ? item.name : ''}
+                >
+                  <span className="flex-shrink-0">{item.icon}</span>
+                  {!isCollapsed && (
+                    <>
+                      <span className="font-medium">{item.name}</span>
+                      {item.badge && (
+                        <span className="ml-auto bg-red-500 text-white text-xs font-medium px-2 py-1 rounded-full badge-bounce">
+                          {item.badge}
+                        </span>
+                      )}
+                    </>
+                  )}
+                  {isCollapsed && item.badge && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-medium w-5 h-5 rounded-full flex items-center justify-center badge-bounce">
+                      {item.badge}
+                    </span>
+                  )}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Footer desktop */}
+        <div className="p-4 border-t border-gray-200">
+          <button
+            onClick={() => {
+              window.location.href = '/';
+            }}
+            className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-all duration-200 w-full ${isCollapsed ? 'justify-center' : ''
+              }`}
+            title={isCollapsed ? 'Retour à l\'accueil' : ''}
+          >
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            {!isCollapsed && <span className="font-medium">Retour à l'accueil</span>}
+          </button>
+
+          {!isCollapsed && (
+            <div className="mt-3 text-xs text-gray-500 text-center">
+              Version 1.0.0
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   );
 };
 

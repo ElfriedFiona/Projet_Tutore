@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AppContext';
+import { Clock, Calendar, RefreshCw, Eye, ArrowLeft, CheckCircle, AlertTriangle } from 'lucide-react';
+import ResponsiveDashboardContainer, { 
+  ResponsiveDashboardGrid, 
+  ResponsiveDashboardHeader,
+  ResponsiveDashboardTabs,
+  ResponsiveDashboardCard,
+  ResponsiveDashboardActions
+} from '../../components/dashboard/ResponsiveDashboardContainer';
+import useResponsiveDashboard from '../../hooks/useResponsiveDashboard';
 
 const DashboardLoans = () => {
-  useAuth(); // Keep for future auth integration
   const [activeTab, setActiveTab] = useState('current');
   const [animate, setAnimate] = useState(false);
+  const { getGridConfig, isMobile } = useResponsiveDashboard();
 
   useEffect(() => {
     setAnimate(true);
@@ -48,7 +56,7 @@ const DashboardLoans = () => {
       id: 3,
       title: "Physique Quantique Avancée",
       author: "Albert Einstein",
-      isbn: "978-0456789123",      borrowDate: "2024-11-25",
+      isbn: "978-0456789123", borrowDate: "2024-11-25",
       dueDate: "2024-12-25",
       status: "En cours",
       renewals: 0,
@@ -220,7 +228,7 @@ const DashboardLoans = () => {
         ★
       </span>
     ));
-  };  return (
+  }; return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 p-4 sm:p-6">
       {/* Enhanced Header */}
       <div className={`mb-8 transition-all duration-700 ${animate ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
@@ -228,7 +236,7 @@ const DashboardLoans = () => {
           {/* Decoration background */}          <div className="absolute inset-0 bg-gradient-to-r from-primary-500/5 via-secondary-500/5 to-primary-500/5"></div>
           <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-primary-400/10 to-secondary-400/10 rounded-full -translate-y-20 translate-x-20"></div>
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-secondary-400/10 to-primary-400/10 rounded-full translate-y-16 -translate-x-16"></div>
-          
+
           <div className="relative z-10">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
               <div className="flex items-start space-x-4">
@@ -244,7 +252,7 @@ const DashboardLoans = () => {
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex flex-wrap gap-4 sm:gap-6">
                 <div className="text-center group">
                   <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300 mb-2">
@@ -252,14 +260,14 @@ const DashboardLoans = () => {
                   </div>
                   <div className="text-sm font-medium text-gray-700">Emprunts actifs</div>
                 </div>
-                
+
                 <div className="text-center group">
                   <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-secondary-500 to-secondary-600 text-white rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300 mb-2">
                     <span className="text-xl font-bold">{loanHistory.length}</span>
                   </div>
                   <div className="text-sm font-medium text-gray-700">Retournés</div>
                 </div>
-                
+
                 <div className="text-center group">
                   <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300 mb-2">
                     <span className="text-xl font-bold">{currentLoans.filter(loan => loan.status === 'En retard').length}</span>
@@ -282,7 +290,7 @@ const DashboardLoans = () => {
             <div>
               <h3 className="text-red-800 font-semibold">Attention: Livres en retard</h3>
               <p className="text-red-700 text-sm">
-                Vous avez {currentLoans.filter(loan => loan.status === 'En retard').length} livre(s) en retard. 
+                Vous avez {currentLoans.filter(loan => loan.status === 'En retard').length} livre(s) en retard.
                 Veuillez les retourner rapidement pour éviter des pénalités.
               </p>
             </div>
@@ -293,13 +301,12 @@ const DashboardLoans = () => {
       {/* Enhanced Tabs */}
       <div className="mb-6">
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-1">
-          <div className="flex space-x-1">
+          <div className="flex space-x-1 gap-4 p-2 w-full">
             <button
-              onClick={() => setActiveTab('current')}              className={`flex-1 py-3 px-6 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden ${
-                activeTab === 'current'
-                  ? 'bg-gradient-to-r from-primary-500 to-primary-700 text-white shadow-lg transform scale-105'
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'
-              }`}
+              onClick={() => setActiveTab('current')} className={`w-full py-3 px-6 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden ${activeTab === 'current'
+                  ? 'bg-gradient-to-r from-primary-500 to-primary-700 text-white shadow-lg transform'
+                  : 'text-gray-600 hover:text-neutral-800 hover:bg-primary-50'
+                }`}
             >
               {activeTab === 'current' && (
                 <div className="absolute inset-0 bg-gradient-to-r from-primary-400/20 to-primary-400/20 animate-pulse"></div>
@@ -307,11 +314,10 @@ const DashboardLoans = () => {
               <span className="relative z-10">📖 Emprunts actuels ({currentLoans.length})</span>
             </button>
             <button
-              onClick={() => setActiveTab('history')}              className={`flex-1 py-3 px-6 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden ${
-                activeTab === 'history'
-                  ? 'bg-gradient-to-r from-primary-500 to-primary-700 text-white shadow-lg transform scale-105'
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'
-              }`}
+              onClick={() => setActiveTab('history')} className={`w-full py-3 px-6 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden ${activeTab === 'history'
+                  ? 'bg-gradient-to-r from-primary-500 to-primary-700 text-white shadow-lg transform'
+                  : 'text-gray-600 hover:text-neutral-800 hover:bg-primary-50'
+                }`}
             >
               {activeTab === 'history' && (
                 <div className="absolute inset-0 bg-gradient-to-r from-primary-400/20 to-primary-400/20 animate-pulse"></div>
@@ -345,29 +351,28 @@ const DashboardLoans = () => {
               const statusStyle = getStatusColor(loan.status);
               const daysRemaining = getDaysRemaining(loan.dueDate);
               const urgencyLevel = getUrgencyLevel(daysRemaining);
-              
+
               return (
-                <div 
-                  key={loan.id} 
+                <div
+                  key={loan.id}
                   data-loan={loan.id}
-                  className={`bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 overflow-hidden transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${
-                    animate ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-                  }`}
+                  className={`bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 overflow-hidden transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${animate ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+                    }`}
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   {/* Status bar at top */}
-                  <div className={`h-2 ${urgencyLevel === 'overdue' ? 'bg-gradient-to-r from-red-500 to-pink-600' : 
+                  <div className={`h-2 ${urgencyLevel === 'overdue' ? 'bg-gradient-to-r from-red-500 to-pink-600' :
                     urgencyLevel === 'urgent' ? 'bg-gradient-to-r from-orange-500 to-red-500' :
-                    urgencyLevel === 'warning' ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
-                    'bg-gradient-to-r from-green-500 to-emerald-500'}`}></div>
-                  
+                      urgencyLevel === 'warning' ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
+                        'bg-gradient-to-r from-green-500 to-emerald-500'}`}></div>
+
                   <div className="p-6 sm:p-8">
                     <div className="flex flex-col lg:flex-row gap-6">
                       {/* Enhanced book image */}
                       <div className="flex-shrink-0">
                         <div className="relative group">                          <div className="w-28 h-40 bg-gradient-to-br from-primary-100 via-secondary-100 to-primary-100 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-105">
-                            <span className="text-4xl">{getBookIcon(loan.category)}</span>
-                          </div>
+                          <span className="text-4xl">{getBookIcon(loan.category)}</span>
+                        </div>
                           <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center shadow-lg">
                             <span className="text-white text-xs font-bold">{loan.renewals}</span>
                           </div>
@@ -384,7 +389,7 @@ const DashboardLoans = () => {
                                 {loan.title}
                               </h3>
                               <p className="text-gray-600 text-lg font-medium mb-2">par {loan.author}</p>
-                              
+
                               {/* Category */}
                               <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(loan.category)}`}>
                                 {getBookIcon(loan.category)} {loan.category}
@@ -421,17 +426,16 @@ const DashboardLoans = () => {
                                 <span className="mr-2">{statusStyle.icon}</span>
                                 {loan.status}
                               </span>
-                              
+
                               {loan.status === 'En cours' && (
-                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                                  urgencyLevel === 'urgent' ? 'bg-orange-100 text-orange-800' :
-                                  urgencyLevel === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-green-100 text-green-800'
-                                }`}>
+                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${urgencyLevel === 'urgent' ? 'bg-orange-100 text-orange-800' :
+                                    urgencyLevel === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+                                      'bg-green-100 text-green-800'
+                                  }`}>
                                   {daysRemaining > 0 ? `${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} restant${daysRemaining > 1 ? 's' : ''}` : 'À rendre aujourd\'hui'}
                                 </span>
                               )}
-                              
+
                               {loan.status === 'En retard' && (
                                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 animate-pulse">
                                   {Math.abs(daysRemaining)} jour{Math.abs(daysRemaining) > 1 ? 's' : ''} de retard
@@ -459,7 +463,7 @@ const DashboardLoans = () => {
                               <span className="mr-2">📚</span>
                               Retourner
                             </button>
-                            
+
                             {loan.renewals >= loan.maxRenewals && (
                               <div className="text-center">
                                 <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
@@ -492,17 +496,16 @@ const DashboardLoans = () => {
           ) : (
             loanHistory.map((loan, index) => {
               const statusStyle = getStatusColor(loan.status);
-              
+
               return (
-                <div 
-                  key={loan.id} 
-                  className={`bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 overflow-hidden transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${
-                    animate ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-                  }`}
+                <div
+                  key={loan.id}
+                  className={`bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 overflow-hidden transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${animate ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+                    }`}
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="h-2 bg-gradient-to-r from-gray-400 to-gray-500"></div>
-                  
+
                   <div className="p-6 sm:p-8">
                     <div className="flex flex-col lg:flex-row gap-6">
                       {/* Book image */}
@@ -522,7 +525,7 @@ const DashboardLoans = () => {
                                 {loan.title}
                               </h3>
                               <p className="text-gray-600 text-lg font-medium mb-2">par {loan.author}</p>
-                              
+
                               {/* Category */}
                               <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(loan.category)}`}>
                                 {getBookIcon(loan.category)} {loan.category}

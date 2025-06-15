@@ -1,27 +1,197 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AppContext';
+import { User, Mail, Phone, MapPin, Calendar, Award, Settings, Shield, Book, Clock, Star, Trophy, Edit2, Save, X } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import ResponsiveDashboardContainer, { 
+  ResponsiveDashboardGrid, 
+  ResponsiveDashboardHeader,
+  ResponsiveDashboardCard,
+  ResponsiveDashboardTabs,
+  ResponsiveDashboardActions
+} from '../../components/dashboard/ResponsiveDashboardContainer';
+import useResponsiveDashboard from '../../hooks/useResponsiveDashboard';
 
 const DashboardProfile = () => {
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('info');
   const [isEditing, setIsEditing] = useState(false);
   const [animate, setAnimate] = useState(false);
-  const [formData, setFormData] = useState({
-    firstName: user?.firstName || 'Jean',
-    lastName: user?.lastName || 'Dupont',
-    email: user?.email || 'jean.dupont@student.edu',
-    department: user?.department || 'Informatique',
-    filiere: user?.filiere || 'Génie Logiciel',
-    niveau: user?.niveau || 'Master 1',
-    specialization: user?.specialization || 'Intelligence Artificielle',
-    grade: user?.grade || 'Étudiant',
-    phone: user?.phone || '+33 6 12 34 56 78',
-    address: user?.address || '123 Avenue des Étudiants, 75000 Paris',
-    bio: user?.bio || 'Passionné par l\'informatique et l\'intelligence artificielle, je recherche constamment de nouvelles connaissances pour enrichir mon parcours académique.',
-    birthDate: user?.birthDate || '1995-03-15',
-    studentId: user?.studentId || 'STU2024001',
-    enrollmentDate: user?.enrollmentDate || '2023-09-01'
-  });
+  
+  // Hooks responsifs et auth
+  const { isMobile, isTablet, getResponsiveClasses, getGridConfig } = useResponsiveDashboard();
+  const { user } = useAuth();
+    // Fonction pour obtenir les données selon le rôle
+  const getUserDataByRole = () => {
+    const currentUserRole = user?.role || user?.userType || 'student'; // Priorité aux vraies données
+    
+    // Utiliser les vraies données de l'utilisateur connecté comme base
+    const realUserData = {
+      firstName: user?.firstName || 'Prénom',
+      lastName: user?.lastName || 'Nom',
+      email: user?.email || 'email@example.com',
+      department: user?.department || 'Non spécifié',
+      role: user?.role || user?.userType || 'student',
+      phone: user?.phone || '+33 6 00 00 00 00',
+      grade: user?.grade || null,
+      specialization: user?.specialization || null
+    };
+
+    // Données complémentaires selon le rôle (peuvent être étendues avec de vraies données API)
+    const roleSpecificDefaults = {
+      student: {
+        ...realUserData,
+        filiere: 'Génie Logiciel',
+        niveau: 'Master 1',
+        grade: realUserData.grade || 'Étudiant',
+        address: '123 Avenue des Étudiants, 75000 Paris',
+        bio: 'Étudiant passionné par l\'informatique et l\'apprentissage continu.',
+        birthDate: '1995-03-15',
+        studentId: 'STU2024001',
+        enrollmentDate: '2023-09-01'
+      },      teacher: {
+        ...realUserData,
+        filiere: null,
+        niveau: null,
+        specialization: realUserData.specialization || 'Intelligence Artificielle & Machine Learning',
+        grade: realUserData.grade || 'Professeur Assistant',
+        address: '456 Boulevard des Professeurs, 75007 Paris',
+        bio: 'Enseignant-chercheur passionné par la transmission du savoir et la recherche.',
+        birthDate: '1985-08-20',
+        employeeId: 'PROF2024001',
+        hireDate: '2015-09-01',
+        researchDomain: 'Machine Learning, Deep Learning, Computer Vision'
+      },
+      librarian: {
+        ...realUserData,
+        filiere: null,
+        niveau: null,
+        specialization: realUserData.specialization || 'Gestion documentaire',
+        grade: realUserData.grade || 'Bibliothécaire en chef',
+        address: '789 Rue de la Bibliothèque, 75005 Paris',
+        bio: 'Responsable de la gestion du catalogue et des services aux usagers.',
+        birthDate: '1980-12-15',
+        employeeId: 'LIB2024001',
+        hireDate: '2010-01-15',
+        certifications: ['Diplôme de conservateur', 'Formation en systèmes documentaires']
+      },
+      admin: {
+        ...realUserData,
+        filiere: null,
+        niveau: null,
+        specialization: realUserData.specialization || 'Administration Système & Sécurité',
+        grade: realUserData.grade || 'Administrateur Système Senior',
+        address: '101 Avenue des Systèmes, 75001 Paris',
+        bio: 'Responsable de l\'infrastructure informatique et de la sécurité des systèmes.',
+        birthDate: '1975-05-10',
+        employeeId: 'ADMIN2024001',
+        hireDate: '2008-03-01',
+        clearanceLevel: 'Niveau 5 - Accès total'
+      },
+      administrator: {
+        ...realUserData,
+        filiere: null,
+        niveau: null,
+        specialization: realUserData.specialization || 'Administration Système & Sécurité',
+        grade: realUserData.grade || 'Administrateur Système Senior',
+        address: '101 Avenue des Systèmes, 75001 Paris',
+        bio: 'Responsable de l\'infrastructure informatique et de la sécurité des systèmes.',
+        birthDate: '1975-05-10',
+        employeeId: 'ADMIN2024001',
+        hireDate: '2008-03-01',
+        clearanceLevel: 'Niveau 5 - Accès total'
+      }
+    };
+
+    return roleSpecificDefaults[currentUserRole] || roleSpecificDefaults.student;
+  };
+  // Fonction pour obtenir les statistiques selon le rôle
+  const getUserStatsByRole = () => {
+    const currentUserRole = user?.role || user?.userType || 'student';
+    
+    // Statistiques de base communes à tous les rôles
+    const baseStats = {
+      accountAge: '1 an', // Peut être calculé à partir de user.createdAt
+      lastActivity: new Date().toISOString().split('T')[0],
+      membershipLevel: 'Gold'
+    };
+    
+    const statsData = {
+      student: {
+        ...baseStats,
+        totalBooksRead: 47,
+        currentLoans: 3,
+        totalReservations: 12,
+        favoriteBooks: 23,
+        averageRating: 4.2,
+        membershipLevel: 'Gold',
+        roleSpecific: {
+          coursesEnrolled: 8,
+          assignmentsCompleted: 156,
+          gpa: 3.8
+        }
+      },      teacher: {
+        ...baseStats,
+        totalBooksRead: 234,
+        currentLoans: 8,
+        totalReservations: 5,
+        favoriteBooks: 67,
+        averageRating: 4.8,
+        membershipLevel: 'Platinum',
+        roleSpecific: {
+          coursesTeaching: 4,
+          studentsSupervised: 23,
+          publicationsCount: 18,
+          researchProjects: 6
+        }
+      },
+      librarian: {
+        ...baseStats,
+        totalBooksRead: 189,
+        currentLoans: 15,
+        totalReservations: 2,
+        favoriteBooks: 89,
+        averageRating: 4.9,
+        membershipLevel: 'Platinum',
+        roleSpecific: {
+          booksProcessed: 1247,
+          usersAssisted: 3456,
+          catalogEntriesCreated: 892,
+          eventsOrganized: 34
+        }
+      },
+      admin: {
+        ...baseStats,
+        totalBooksRead: 98,
+        currentLoans: 5,
+        totalReservations: 1,
+        favoriteBooks: 45,
+        averageRating: 4.5,
+        membershipLevel: 'Platinum',
+        roleSpecific: {
+          systemsManaged: 12,
+          usersManaged: 2456,
+          backupsCompleted: 365,
+          securityIncidents: 0
+        }
+      },
+      administrator: {
+        ...baseStats,
+        totalBooksRead: 98,
+        currentLoans: 5,
+        totalReservations: 1,
+        favoriteBooks: 45,
+        averageRating: 4.5,
+        membershipLevel: 'Platinum',
+        roleSpecific: {
+          systemsManaged: 12,
+          usersManaged: 2456,
+          backupsCompleted: 365,
+          securityIncidents: 0
+        }
+      }
+    };
+
+    return statsData[currentUserRole] || statsData.student;
+  };
+  const [formData, setFormData] = useState(getUserDataByRole());
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -29,16 +199,122 @@ const DashboardProfile = () => {
     confirmPassword: ''
   });
 
-  // Enhanced user statistics
-  const userStats = {
-    totalBooksRead: 47,
-    currentLoans: 3,
-    totalReservations: 12,
-    favoriteBooks: 23,
-    accountAge: '1 an',
-    averageRating: 4.2,
-    lastActivity: '2024-11-25',
-    membershipLevel: 'Gold'
+  // Enhanced user statistics basées sur le rôle
+  const userStats = getUserStatsByRole();
+    // Fonction pour obtenir le rôle actuel (avec support des variantes)
+  const getCurrentRole = () => {
+    const role = user?.role || user?.userType || 'student';
+    // Normaliser les variantes de rôles
+    if (role === 'administrator' || role === 'admin') return 'admin';
+    return role;
+  };
+  
+  // Fonction pour obtenir l'icône selon le rôle
+  const getRoleIcon = () => {
+    const roleIcons = {
+      student: '🎓',
+      teacher: '👨‍🏫',
+      librarian: '📚',
+      admin: '⚙️',
+      administrator: '⚙️'
+    };
+    return roleIcons[getCurrentRole()] || '👤';
+  };
+    
+  // Fonction pour obtenir le label du rôle
+  const getRoleLabel = () => {
+    const roleLabels = {
+      student: 'Étudiant',
+      teacher: 'Enseignant',
+      librarian: 'Bibliothécaire',
+      admin: 'Administrateur',
+      administrator: 'Administrateur'
+    };
+    return roleLabels[getCurrentRole()] || 'Utilisateur';
+  };
+
+  // Fonction pour obtenir les statistiques rapides selon le rôle
+  const getQuickStatsByRole = () => {
+    const currentRole = getCurrentRole();
+    const baseStats = [
+      {
+        value: userStats.totalBooksRead,
+        label: 'Livres lus',
+        icon: '📚',
+        color: 'from-primary-500 to-primary-600'
+      },
+      {
+        value: userStats.currentLoans,
+        label: 'Emprunts actifs',
+        icon: '📖',
+        color: 'from-green-500 to-emerald-600'
+      }
+    ];
+
+    const roleSpecificStats = {
+      student: [
+        ...baseStats,
+        {
+          value: userStats.totalReservations,
+          label: 'Réservations',
+          icon: '📅',
+          color: 'from-purple-500 to-purple-600'
+        },
+        {
+          value: userStats.favoriteBooks,
+          label: 'Favoris',
+          icon: '❤️',
+          color: 'from-red-500 to-red-600'
+        }
+      ],
+      teacher: [
+        ...baseStats,
+        {
+          value: userStats.roleSpecific.studentsSupervised,
+          label: 'Étudiants encadrés',
+          icon: '👥',
+          color: 'from-blue-500 to-blue-600'
+        },
+        {
+          value: userStats.roleSpecific.publicationsCount,
+          label: 'Publications',
+          icon: '📄',
+          color: 'from-yellow-500 to-yellow-600'
+        }
+      ],
+      librarian: [
+        ...baseStats,
+        {
+          value: userStats.roleSpecific.usersAssisted,
+          label: 'Utilisateurs aidés',
+          icon: '🤝',
+          color: 'from-indigo-500 to-indigo-600'
+        },
+        {
+          value: userStats.roleSpecific.booksProcessed,
+          label: 'Livres traités',
+          icon: '⚡',
+          color: 'from-orange-500 to-orange-600'
+        }
+      ],
+      admin: [
+        ...baseStats,
+        {
+          value: userStats.roleSpecific.usersManaged,
+          label: 'Utilisateurs gérés',
+          icon: '👤',
+          color: 'from-gray-500 to-gray-600'
+        },
+        {
+          value: userStats.roleSpecific.systemsManaged,
+          label: 'Systèmes gérés',
+          icon: '⚙️',
+          color: 'from-cyan-500 to-cyan-600'
+        }
+      ]
+    };
+
+    return roleSpecificStats[currentRole] || roleSpecificStats.student;
   };
 
   useEffect(() => {
@@ -99,6 +375,298 @@ const DashboardProfile = () => {
       </span>
     ));
   };
+  // Fonction pour rendre les informations spécifiques au rôle
+  const renderRoleSpecificInfo = () => {
+    const currentRole = getCurrentRole();
+    
+    switch (currentRole) {
+      case 'student':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">📚 Informations académiques</h3>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">ID Étudiant</label>
+              <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.studentId}</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Filière</label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  name="filiere"
+                  value={formData.filiere || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                />
+              ) : (
+                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.filiere}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Niveau</label>
+              {isEditing ? (
+                <select
+                  name="niveau"
+                  value={formData.niveau || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                >
+                  <option value="">Sélectionner un niveau</option>
+                  <option value="Licence 1">Licence 1</option>
+                  <option value="Licence 2">Licence 2</option>
+                  <option value="Licence 3">Licence 3</option>
+                  <option value="Master 1">Master 1</option>
+                  <option value="Master 2">Master 2</option>
+                  <option value="Doctorat">Doctorat</option>
+                </select>
+              ) : (
+                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.niveau || 'Non spécifié'}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Date d'inscription</label>
+              <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">
+                {formData.enrollmentDate ? new Date(formData.enrollmentDate).toLocaleDateString('fr-FR') : 'Non disponible'}
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Statistiques académiques</label>
+              <div className="grid grid-cols-2 gap-4 px-4 py-3 bg-gray-50 rounded-xl">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-blue-600">{userStats.roleSpecific.coursesEnrolled}</div>
+                  <div className="text-xs text-gray-600">Cours inscrits</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-green-600">{userStats.roleSpecific.gpa}</div>
+                  <div className="text-xs text-gray-600">GPA</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'teacher':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">👨‍🏫 Informations professionnelles</h3>            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">ID Employé</label>
+              <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.employeeId || 'Non spécifié'}</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Grade</label>
+              {isEditing ? (
+                <select
+                  name="grade"
+                  value={formData.grade || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                >
+                  <option value="">Sélectionner un grade</option>
+                  <option value="Professeur">Professeur</option>
+                  <option value="Professeur Assistant">Professeur Assistant</option>
+                  <option value="Maître de Conférences">Maître de Conférences</option>
+                  <option value="Chargé de Cours">Chargé de Cours</option>
+                  <option value="Vacataire">Vacataire</option>
+                </select>
+              ) : (
+                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.grade || 'Non spécifié'}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Domaine de recherche</label>
+              {isEditing ? (
+                <textarea
+                  name="researchDomain"
+                  value={formData.researchDomain || ''}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                  placeholder="Décrivez vos domaines de recherche..."
+                />
+              ) : (
+                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.researchDomain || 'Non spécifié'}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Date d'embauche</label>
+              <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">
+                {formData.hireDate ? new Date(formData.hireDate).toLocaleDateString('fr-FR') : 'Non disponible'}
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Statistiques d'enseignement</label>
+              <div className="grid grid-cols-2 gap-4 px-4 py-3 bg-gray-50 rounded-xl">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-blue-600">{userStats.roleSpecific.coursesTeaching}</div>
+                  <div className="text-xs text-gray-600">Cours enseignés</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-green-600">{userStats.roleSpecific.studentsSupervised}</div>
+                  <div className="text-xs text-gray-600">Étudiants encadrés</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-purple-600">{userStats.roleSpecific.publicationsCount}</div>
+                  <div className="text-xs text-gray-600">Publications</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-orange-600">{userStats.roleSpecific.researchProjects}</div>
+                  <div className="text-xs text-gray-600">Projets recherche</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );      case 'librarian':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">📚 Informations professionnelles</h3>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">ID Employé</label>
+              <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.employeeId || 'Non spécifié'}</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Grade</label>
+              {isEditing ? (
+                <select
+                  name="grade"
+                  value={formData.grade || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                >
+                  <option value="">Sélectionner un grade</option>
+                  <option value="Bibliothécaire en chef">Bibliothécaire en chef</option>
+                  <option value="Bibliothécaire principal">Bibliothécaire principal</option>
+                  <option value="Bibliothécaire">Bibliothécaire</option>
+                  <option value="Assistant bibliothécaire">Assistant bibliothécaire</option>
+                </select>
+              ) : (
+                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.grade || 'Non spécifié'}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Certifications</label>
+              <div className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">
+                {formData.certifications?.map((cert, index) => (
+                  <div key={index} className="flex items-center gap-2 mb-1">
+                    <span className="text-green-600">✓</span>
+                    <span>{cert}</span>
+                  </div>
+                )) || <span className="text-gray-500">Aucune certification enregistrée</span>}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Date d'embauche</label>
+              <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">
+                {formData.hireDate ? new Date(formData.hireDate).toLocaleDateString('fr-FR') : 'Non disponible'}
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Statistiques de performance</label>
+              <div className="grid grid-cols-2 gap-4 px-4 py-3 bg-gray-50 rounded-xl">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-blue-600">{userStats.roleSpecific.usersAssisted}</div>
+                  <div className="text-xs text-gray-600">Utilisateurs aidés</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-green-600">{userStats.roleSpecific.booksProcessed}</div>
+                  <div className="text-xs text-gray-600">Livres traités</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-purple-600">{userStats.roleSpecific.catalogEntriesCreated}</div>
+                  <div className="text-xs text-gray-600">Entrées catalogue</div>                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'admin':
+      case 'administrator':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">⚙️ Informations administratives</h3>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">ID Employé</label>
+              <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.employeeId || 'Non spécifié'}</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Grade</label>
+              {isEditing ? (
+                <select
+                  name="grade"
+                  value={formData.grade || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                >
+                  <option value="">Sélectionner un grade</option>
+                  <option value="Administrateur Système Senior">Administrateur Système Senior</option>
+                  <option value="Administrateur Système">Administrateur Système</option>
+                  <option value="Administrateur Principal">Administrateur Principal</option>
+                  <option value="Administrateur">Administrateur</option>
+                </select>
+              ) : (
+                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.grade || 'Non spécifié'}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Niveau d'habilitation</label>
+              <p className="px-4 py-3 bg-red-50 rounded-xl text-red-800 border border-red-200">
+                🔐 {formData.clearanceLevel || 'Niveau standard'}
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Date d'embauche</label>
+              <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">
+                {formData.hireDate ? new Date(formData.hireDate).toLocaleDateString('fr-FR') : 'Non disponible'}
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Statistiques d'administration</label>
+              <div className="grid grid-cols-2 gap-4 px-4 py-3 bg-gray-50 rounded-xl">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-blue-600">{userStats.roleSpecific.systemsManaged}</div>
+                  <div className="text-xs text-gray-600">Systèmes gérés</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-green-600">{userStats.roleSpecific.usersManaged}</div>
+                  <div className="text-xs text-gray-600">Utilisateurs gérés</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-purple-600">{userStats.roleSpecific.backupsCompleted}</div>
+                  <div className="text-xs text-gray-600">Sauvegardes</div>
+                </div>
+                <div className="text-center">
+                  <div className={`text-lg font-bold ${userStats.roleSpecific.securityIncidents === 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {userStats.roleSpecific.securityIncidents}
+                  </div>
+                  <div className="text-xs text-gray-600">Incidents sécurité</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 p-4 sm:p-6">
@@ -122,61 +690,69 @@ const DashboardProfile = () => {
                   <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center">
                     <span className="text-white text-xs">✓</span>
                   </div>
-                </div>
-
-                <div>
+                </div>                <div>
                   <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
                     {formData.firstName} {formData.lastName}
                   </h1>
                   <p className="text-gray-600 text-lg mb-2">{formData.email}</p>
-                  <div className="flex flex-wrap items-center gap-2">                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800">
-                    📚 {formData.department}
-                  </span>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-secondary-100 text-secondary-800">
-                      🎓 {formData.niveau}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Badge de rôle */}
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border border-purple-300">
+                      {getRoleIcon()} {getRoleLabel()}
                     </span>
+                    
+                    {/* Badge de département */}
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800">
+                      📚 {formData.department}
+                    </span>
+                    
+                    {/* Badge spécifique au rôle */}
+                    {getCurrentRole() === 'student' && formData.niveau && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-secondary-100 text-secondary-800">
+                        🎓 {formData.niveau}
+                      </span>
+                    )}
+                    
+                    {getCurrentRole() === 'teacher' && formData.researchDomain && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        🔬 Recherche
+                      </span>
+                    )}
+                    
+                    {getCurrentRole() === 'librarian' && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        📖 Services documentaires
+                      </span>
+                    )}
+                    
+                    {getCurrentRole() === 'admin' && formData.clearanceLevel && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                        🔐 {formData.clearanceLevel}
+                      </span>
+                    )}
+                    
+                    {/* Badge de niveau */}
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getMembershipColor(userStats.membershipLevel)}`}>
                       👑 {userStats.membershipLevel}
                     </span>
                   </div>
                 </div>
-              </div>
-
-              {/* Quick stats */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">                <div className="text-center group">
-                <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300 mb-2">
-                  <span className="text-xl font-bold">{userStats.totalBooksRead}</span>
-                </div>
-                <div className="text-sm font-medium text-gray-700">Livres lus</div>
-              </div>
-
-                <div className="text-center group">
-                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300 mb-2">
-                    <span className="text-xl font-bold">{userStats.currentLoans}</span>
+              </div>              {/* Quick stats adaptées au rôle */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {getQuickStatsByRole().map((stat, index) => (
+                  <div key={index} className="text-center group">
+                    <div className={`flex items-center justify-center w-12 h-12 bg-gradient-to-br ${stat.color} text-white rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300 mb-2`}>
+                      <span className="text-lg">{stat.icon}</span>
+                    </div>
+                    <div className="text-lg font-bold text-gray-800">{stat.value}</div>
+                    <div className="text-xs font-medium text-gray-600">{stat.label}</div>
                   </div>
-                  <div className="text-sm font-medium text-gray-700">Emprunts actifs</div>
-                </div>
-
-                <div className="text-center group">
-                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-secondary-500 to-secondary-600 text-white rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300 mb-2">
-                    <span className="text-xl font-bold">{userStats.totalReservations}</span>
-                  </div>
-                  <div className="text-sm font-medium text-gray-700">Réservations</div>
-                </div>
-
-                <div className="text-center group">
-                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-secondary-600 to-secondary-700 text-white rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300 mb-2">
-                    <span className="text-xl font-bold">{userStats.favoriteBooks}</span>
-                  </div>
-                  <div className="text-sm font-medium text-gray-700">Favoris</div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Enhanced Tabs */}
+      </div>      {/* Enhanced Tabs */}
       <div className="mb-6">
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-1">
           <div className="flex space-x-1 gap-4">
@@ -296,9 +872,7 @@ const DashboardProfile = () => {
                 ) : (
                   <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.phone}</p>
                 )}
-              </div>
-
-              <div>
+              </div>              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
                 {isEditing ? (<input
                   type="date"
@@ -312,16 +886,6 @@ const DashboardProfile = () => {
                     {new Date(formData.birthDate).toLocaleDateString('fr-FR')}
                   </p>
                 )}
-              </div>
-            </div>
-
-            {/* Academic Information */}
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Informations académiques</h3>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">ID Étudiant</label>
-                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.studentId}</p>
               </div>
 
               <div>
@@ -338,6 +902,8 @@ const DashboardProfile = () => {
                     <option value="Physique">Physique</option>
                     <option value="Chimie">Chimie</option>
                     <option value="Biologie">Biologie</option>
+                    <option value="Services Bibliothèque">Services Bibliothèque</option>
+                    <option value="Administration Système">Administration Système</option>
                   </select>
                 ) : (
                   <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.department}</p>
@@ -345,63 +911,21 @@ const DashboardProfile = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Filière</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Grade/Fonction</label>
                 {isEditing ? (
                   <input
                     type="text"
-                    name="filiere"
-                    value={formData.filiere}
+                    name="grade"
+                    value={formData.grade}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
                   />
                 ) : (
-                  <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.filiere}</p>
+                  <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.grade}</p>
                 )}
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Niveau</label>
-                {isEditing ? (
-                  <select
-                    name="niveau"
-                    value={formData.niveau}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
-                  >
-                    <option value="Licence 1">Licence 1</option>
-                    <option value="Licence 2">Licence 2</option>
-                    <option value="Licence 3">Licence 3</option>
-                    <option value="Master 1">Master 1</option>
-                    <option value="Master 2">Master 2</option>
-                    <option value="Doctorat">Doctorat</option>
-                  </select>
-                ) : (
-                  <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.niveau}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Spécialisation</label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    name="specialization"
-                    value={formData.specialization}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
-                  />
-                ) : (
-                  <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.specialization}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Date d'inscription</label>
-                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">
-                  {new Date(formData.enrollmentDate).toLocaleDateString('fr-FR')}
-                </p>
-              </div>
-            </div>
+            </div>{/* Role-specific Information */}
+            {renderRoleSpecificInfo()}
           </div>
 
           {/* Address and Bio */}
