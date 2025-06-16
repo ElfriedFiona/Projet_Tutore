@@ -2,9 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-*{
+/* *{
   outline: 1px dashed red;
-}
+} */
 
 :root {
   font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
