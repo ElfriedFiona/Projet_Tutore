@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { 
+import React, { useState, useEffect, useCallback } from 'react'; // Import useCallback
+import {
   BookOpen, Search, Filter, Calendar, User, AlertCircle,
   CheckCircle, Clock, Undo2, Mail, Phone, MapPin,
   Download, FileText, Eye, RotateCcw, Ban
 } from 'lucide-react';
+import api from '../../../services/apiService';
 
 const LoanManagement = () => {
   const [loans, setLoans] = useState([]);
@@ -11,134 +12,143 @@ const LoanManagement = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
-  // Mock data pour les prêts
-  const mockLoans = [
-    {
-      id: 1,
-      bookTitle: "Introduction à la Physique Quantique",
-      bookAuthor: "Dr. Ahmed Kouassi",
-      isbn: "978-2-123456-78-9",
+  // Fonction pour formater les données d'emprunt de l'API
+const formatLoanData = (apiLoan) => {
+    const today = new Date();
+    const dueDate = new Date(apiLoan.dateRetourPrevu);
+    const daysOverdue = apiLoan.statut === 'en cours' && today > dueDate
+      ? Math.floor((today - dueDate) / (1000 * 60 * 60 * 24))
+      : 0;
+
+    return {
+      id: apiLoan.id,
+      bookTitle: apiLoan.ouvrage?.titre || "Titre inconnu",
+      bookAuthor: apiLoan.ouvrage?.auteur || "Auteur inconnu",
+      isbn: apiLoan.ouvrage?.isbn || "",
       borrower: {
-        id: 101,
-        name: "Marie Dumont",
-        email: "marie.dumont@enspd.edu.cm",
-        phone: "+237 6XX XXX XXX",
-        studentId: "20231045",
-        program: "Master Physique"
+        id: apiLoan.user?.id,
+        name: `${apiLoan.user?.prenom || ''} ${apiLoan.user?.nom || ''}`.trim() || "Inconnu", 
+        email: apiLoan.user?.email || "N/A",
+        phone: apiLoan.user?.telephone || "N/A", 
+        studentId: apiLoan.user?.etudiant?.matricule || "N/A", 
+        program: apiLoan.user?.etudiant?.filiere || "N/A" 
       },
-      loanDate: "2024-01-15",
-      dueDate: "2024-02-15",
-      returnDate: null,
-      status: "En cours",
-      daysOverdue: 0,
-      renewalCount: 1,
+      loanDate: apiLoan.dateEmprunt || apiLoan.created_at,
+      dueDate: apiLoan.dateRetourPrevu,
+      returnDate: apiLoan.dateRetourEffectif,
+      status: apiLoan.statut === 'en cours' && daysOverdue > 0 ? 'En retard' : (apiLoan.statut || 'Inconnu'),
+      daysOverdue: daysOverdue,
+      renewalCount: apiLoan.nbProlongations || 0,
       maxRenewals: 3,
-      fine: 0
-    },
-    {
-      id: 2,
-      bookTitle: "Histoire du Cameroun Contemporain",
-      bookAuthor: "Prof. Marie Bamileke",
-      isbn: "978-2-987654-32-1",
-      borrower: {
-        id: 102,
-        name: "Jean Mballa",
-        email: "jean.mballa@enspd.edu.cm",
-        phone: "+237 6XX XXX XXX",
-        studentId: "20231089",
-        program: "Licence Histoire"
-      },
-      loanDate: "2024-01-05",
-      dueDate: "2024-01-20",
-      returnDate: null,
-      status: "En retard",
-      daysOverdue: 12,
-      renewalCount: 2,
-      maxRenewals: 3,
-      fine: 1200
-    },
-    {
-      id: 3,
-      bookTitle: "Algorithmes et Structures de Données",
-      bookAuthor: "Dr. Jean-Claude Assi",
-      isbn: "978-2-456789-12-3",
-      borrower: {
-        id: 103,
-        name: "Sarah Nkomo",
-        email: "sarah.nkomo@enspd.edu.cm",
-        phone: "+237 6XX XXX XXX",
-        studentId: "20231156",
-        program: "Master Informatique"
-      },
-      loanDate: "2024-01-10",
-      dueDate: "2024-02-10",
-      returnDate: "2024-02-08",
-      status: "Retourné",
-      daysOverdue: 0,
-      renewalCount: 0,
-      maxRenewals: 3,
-      fine: 0
+      fine: apiLoan.amendes ? apiLoan.amendes.reduce((sum, amende) => sum + amende.montant, 0) : 0,
+      coverImage: apiLoan.ouvrage?.imageCouverture || '/images/books/default.jpg',
+      category: apiLoan.ouvrage?.categorie?.nom || "Inconnu",
+    };
+};
+
+  // Fonction pour récupérer les prêts
+  const fetchLoans = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Utilisez l'API indexAll pour le bibliothécaire
+      const response = await api.get(`/admin/emprunts`, {
+      });
+      const formattedLoans = response.data.map(formatLoanData);
+      setLoans(formattedLoans);
+    } catch (err) {
+      console.error("Erreur lors de la récupération des prêts:", err);
+      setError("Impossible de charger les prêts. Veuillez réessayer.");
+    } finally {
+      setLoading(false);
     }
-  ];
-
-  const statusOptions = [
-    { value: 'all', label: 'Tous les prêts', count: 45 },
-    { value: 'En cours', label: 'En cours', count: 28 },
-    { value: 'En retard', label: 'En retard', count: 12 },
-    { value: 'Retourné', label: 'Retournés', count: 5 }
-  ];
+  }, []); // Dépendances vides car fetchLoans ne dépend de rien d'extérieur
 
   useEffect(() => {
-    setTimeout(() => {
-      setLoans(mockLoans);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    fetchLoans();
+  }, [fetchLoans]); // Exécuter une fois au montage et chaque fois que fetchLoans change (ce qui n'arrive pas avec useCallback sans deps)
+
+
+  // Statistiques calculées dynamiquement
+  const totalLoans = loans.length;
+  const currentLoansCount = loans.filter(loan => loan.status === 'en cours').length;
+  const overdueLoansCount = loans.filter(loan => loan.status === 'En retard').length;
+  const returnedTodayCount = loans.filter(loan => loan.returnDate === new Date().toISOString().split('T')[0]).length;
+  const totalFines = loans.reduce((sum, loan) => sum + loan.fine, 0);
+
+
+  const statusOptions = [
+    { value: 'all', label: 'Tous les prêts', count: totalLoans },
+    { value: 'en cours', label: 'En cours', count: currentLoansCount },
+    { value: 'En retard', label: 'En retard', count: overdueLoansCount },
+    { value: 'terminé', label: 'Retournés', count: loans.filter(loan => loan.status === 'terminé').length } // Utilisez 'terminé' pour le filtre si c'est le statut backend
+  ];
+
 
   const filteredLoans = loans.filter(loan => {
-    const matchesSearch = 
+    const matchesSearch =
       loan.bookTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
       loan.borrower.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      loan.borrower.studentId.includes(searchTerm) ||
-      loan.isbn.includes(searchTerm);
-    const matchesStatus = statusFilter === 'all' || loan.status === statusFilter;
+      (loan.borrower.studentId && loan.borrower.studentId.includes(searchTerm)) || // Ajoutez une vérification pour studentId
+      (loan.isbn && loan.isbn.includes(searchTerm)); // Ajoutez une vérification pour ISBN
+    const matchesStatus = statusFilter === 'all' || loan.status.toLowerCase() === statusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
   });
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'En cours': return 'bg-blue-100 text-blue-800';
-      case 'En retard': return 'bg-red-100 text-red-800';
-      case 'Retourné': return 'bg-green-100 text-green-800';
+    switch (status.toLowerCase()) { // Utilisez toLowerCase pour correspondre aux statuts backend
+      case 'en cours': return 'bg-blue-100 text-blue-800';
+      case 'en retard': return 'bg-red-100 text-red-800';
+      case 'terminé': return 'bg-green-100 text-green-800';
+      case 'en attente': return 'bg-yellow-100 text-yellow-800'; // Nouveau statut
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const handleReturn = (loanId) => {
-    setLoans(prevLoans =>
-      prevLoans.map(loan =>
-        loan.id === loanId
-          ? { ...loan, status: 'Retourné', returnDate: new Date().toISOString().split('T')[0] }
-          : loan
-      )
-    );
+  const showSuccessMessage = (message) => {
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(null), 3000); // Masquer après 3 secondes
   };
 
-  const handleRenewal = (loanId) => {
-    setLoans(prevLoans =>
-      prevLoans.map(loan =>
-        loan.id === loanId && loan.renewalCount < loan.maxRenewals
-          ? {
-              ...loan,
-              renewalCount: loan.renewalCount + 1,
-              dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-              daysOverdue: 0
-            }
-          : loan
-      )
-    );
+  const handleReturn = async (loanId) => {
+    try {
+      await api.post(`/emprunts/${loanId}/retour`, {
+        etatRetour: "Bon", // Exemple : assume un bon état par défaut pour le moment
+        notes: ""
+      });
+      showSuccessMessage("Livre marqué comme retourné avec succès !");
+      fetchLoans(); // Recharger les prêts après l'action
+    } catch (err) {
+      console.error("Erreur lors du retour du livre:", err);
+      setError("Impossible de marquer le livre comme retourné.");
+    }
   };
+
+  const handleRenewal = async (loanId) => {
+    try {
+      await api.post(`/emprunts/${loanId}/prolonger`, {});
+      showSuccessMessage("Prêt prolongé avec succès !");
+      fetchLoans(); // Recharger les prêts après l'action
+    } catch (err) {
+      console.error("Erreur lors de la prolongation:", err);
+      setError("Impossible de prolonger le prêt. " + (err.response?.data?.message || ""));
+    }
+  };
+
+  const handleValidateLoan = async (loanId) => {
+    try {
+      await api.post(`/emprunts/${loanId}/valider`, {});
+      showSuccessMessage("Emprunt validé avec succès !");
+      fetchLoans(); // Recharger les prêts après l'action
+    } catch (err) {
+      console.error("Erreur lors de la validation:", err);
+      setError("Impossible de valider l'emprunt. " + (err.response?.data?.message || ""));
+    }
+  };
+
 
   const LoanCard = ({ loan }) => (
     <div className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
@@ -167,13 +177,13 @@ const LoanManagement = () => {
         <div className="grid grid-cols-2 gap-4 text-sm mb-4">
           <div>
             <span className="text-gray-500">Date d'emprunt:</span>
-            <p className="font-medium">{new Date(loan.loanDate).toLocaleDateString('fr-FR')}</p>
+            <p className="font-medium">{loan.loanDate ? new Date(loan.loanDate).toLocaleDateString('fr-FR') : 'N/A'}</p>
           </div>
           <div>
-            <span className="text-gray-500">Date de retour:</span>
+            <span className="text-gray-500">Date de retour prévue:</span>
             <p className={`font-medium ${loan.daysOverdue > 0 ? 'text-red-600' : 'text-gray-900'}`}>
-              {new Date(loan.dueDate).toLocaleDateString('fr-FR')}
-              {loan.daysOverdue > 0 && ` (${loan.daysOverdue}j de retard)`}
+              {loan.dueDate ? new Date(loan.dueDate).toLocaleDateString('fr-FR') : 'N/A'}
+              {loan.status === 'En retard' && ` (${loan.daysOverdue}j de retard)`}
             </p>
           </div>
         </div>
@@ -190,7 +200,17 @@ const LoanManagement = () => {
         )}
 
         <div className="flex space-x-2">
-          {loan.status === 'En cours' || loan.status === 'En retard' ? (
+          {loan.status === 'en attente' && (
+            <button
+              onClick={() => handleValidateLoan(loan.id)}
+              className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+            >
+              <CheckCircle className="w-4 h-4 inline mr-1" />
+              Valider l'emprunt
+            </button>
+          )}
+
+          {loan.status === 'en cours' || loan.status === 'En retard' ? (
             <>
               <button
                 onClick={() => handleReturn(loan.id)}
@@ -284,7 +304,7 @@ const LoanManagement = () => {
                 <div>
                   <p className="text-sm font-medium text-blue-900">Emprunt effectué</p>
                   <p className="text-xs text-blue-700">
-                    {new Date(selectedLoan?.loanDate).toLocaleDateString('fr-FR')}
+                    {selectedLoan?.loanDate ? new Date(selectedLoan.loanDate).toLocaleDateString('fr-FR') : 'N/A'}
                   </p>
                 </div>
               </div>
@@ -296,6 +316,16 @@ const LoanManagement = () => {
                     <p className="text-xs text-green-700">
                       {new Date(selectedLoan?.returnDate).toLocaleDateString('fr-FR')}
                     </p>
+                  </div>
+                </div>
+              )}
+              {/* Ajoutez un affichage pour les prolongations si pertinent ici */}
+              {selectedLoan?.renewalCount > 0 && (
+                <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg">
+                  <RotateCcw className="w-4 h-4 text-purple-600" />
+                  <div>
+                    <p className="text-sm font-medium text-purple-900">Renouvelé {selectedLoan.renewalCount} fois</p>
+                    {/* Vous pourriez afficher les dates de prolongation ici si l'API les fournissait */}
                   </div>
                 </div>
               )}
@@ -316,6 +346,24 @@ const LoanManagement = () => {
 
   return (
     <div className="p-6 space-y-6">
+      {successMessage && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Succès !</strong>
+          <span className="block sm:inline ml-2">{successMessage}</span>
+          <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={() => setSuccessMessage(null)}>
+            <svg className="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.103l-2.651 2.651a1.2 1.2 0 1 1-1.697-1.697L8.303 9.406l-2.651-2.651a1.2 1.2 0 1 1 1.697-1.697L10 7.71l2.651-2.651a1.2 1.2 0 0 1 1.697 1.697L11.697 9.406l2.651 2.651a1.2 1.2 0 0 1 0 1.697z" /></svg>
+          </span>
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Erreur !</strong>
+          <span className="block sm:inline ml-2">{error}</span>
+          <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={() => setError(null)}>
+            <svg className="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.103l-2.651 2.651a1.2 1.2 0 1 1-1.697-1.697L8.303 9.406l-2.651-2.651a1.2 1.2 0 1 1 1.697-1.697L10 7.71l2.651-2.651a1.2 1.2 0 0 1 1.697 1.697L11.697 9.406l2.651 2.651a1.2 1.2 0 0 1 0 1.697z" /></svg>
+          </span>
+        </div>
+      )}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Gestion des Prêts et Retours</h1>
       </div>
@@ -329,7 +377,7 @@ const LoanManagement = () => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Prêts actifs</p>
-              <p className="text-2xl font-bold text-gray-900">28</p>
+              <p className="text-2xl font-bold text-gray-900">{currentLoansCount}</p>
             </div>
           </div>
         </div>
@@ -340,7 +388,7 @@ const LoanManagement = () => {
             </div>
             <div>
               <p className="text-sm text-gray-600">En retard</p>
-              <p className="text-2xl font-bold text-gray-900">12</p>
+              <p className="text-2xl font-bold text-gray-900">{overdueLoansCount}</p>
             </div>
           </div>
         </div>
@@ -351,7 +399,7 @@ const LoanManagement = () => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Retours du jour</p>
-              <p className="text-2xl font-bold text-gray-900">5</p>
+              <p className="text-2xl font-bold text-gray-900">{returnedTodayCount}</p>
             </div>
           </div>
         </div>
@@ -361,8 +409,8 @@ const LoanManagement = () => {
               <AlertCircle className="w-6 h-6 text-yellow-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Amendes</p>
-              <p className="text-2xl font-bold text-gray-900">8 500 F</p>
+              <p className="text-sm text-gray-600">Amendes totales</p>
+              <p className="text-2xl font-bold text-gray-900">{totalFines} F</p>
             </div>
           </div>
         </div>
@@ -394,7 +442,7 @@ const LoanManagement = () => {
               ))}
             </select>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
               <Download className="w-4 h-4 inline mr-2" />
@@ -411,7 +459,7 @@ const LoanManagement = () => {
             Prêts ({filteredLoans.length})
           </h3>
         </div>
-        
+
         <div className="p-6">
           {filteredLoans.length === 0 ? (
             <div className="text-center py-16">

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useReducer, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useMemo, useEffect } from 'react';
+import api from '../services/apiService';
 
 // Constants
 const CONFIG = {
@@ -398,6 +399,24 @@ export const AppProvider = ({ children }) => {
     preferences: state.preferences,
   }), [state, actions, utils]);
 
+   // 👇 Appelé une seule fois après le chargement de l'app
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const userData = localStorage.getItem('user');
+
+    if (token && userData) {
+      try {
+        const user = JSON.parse(userData);
+        const permissions = generatePermissions(user.role);
+        actions.loginSuccess(user, permissions);
+      } catch (error) {
+        console.error("Erreur parsing user:", error);
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
+      }
+    }
+  }, []);
+
   return (
     <AppContext.Provider value={contextValue}>
       {children}
@@ -408,6 +427,20 @@ export const AppProvider = ({ children }) => {
 /**
  * Hook spécialisé pour l'authentification
  */
+const generatePermissions = (role) => {
+  switch (role) {
+    case 'admin':
+      return ['admin', 'read', 'write', 'manage_users'];
+    case 'bibliothecaire':
+      return ['librarian', 'read', 'write', 'manage_books'];
+    case 'enseignant':
+      return ['teacher', 'read', 'recommend'];
+    case 'etudiant':
+    default:
+      return ['student', 'read'];
+  }
+};
+
 export const useAuth = () => {
   const { state, actions, utils } = useApp();
   
@@ -418,165 +451,149 @@ export const useAuth = () => {
     loading: state.loading.auth,    error: state.errors.auth,
     
     login: async (credentials) => {
-      return utils.withLoading('auth', async () => {
-        actions.loginRequest();
-        
-        // Mock authentication logic (replace with real API call later)
-        const { email, password } = credentials;
-        
-        await new Promise((resolve, reject) => {
-          setTimeout(() => {
-            // Mock successful login with various test accounts
-            if (email === 'admin@example.com' && password === 'password123') {
-              const user = {
-                id: 1,
-                firstName: 'Admin',
-                lastName: 'User',
-                email: 'admin@example.com',
-                role: 'admin'
-              };
-              actions.loginSuccess(user, ['admin', 'read', 'write']);
-              resolve();
-            } else if (email === 'administrator@enspd.cm' && password === 'admin123') {
-              const user = {
-                id: 2,
-                firstName: 'Jean',
-                lastName: 'Administrateur',
-                email: 'administrator@enspd.cm',
-                role: 'administrator',
-                userType: 'administrator',
-                department: 'Administration'
-              };
-              actions.loginSuccess(user, ['admin', 'read', 'write', 'manage_users']);
-              resolve();
-            } else if (email === 'librarian@enspd.cm' && password === 'lib123') {
-              const user = {
-                id: 3,
-                firstName: 'Marie',
-                lastName: 'Bibliothécaire',
-                email: 'librarian@enspd.cm',
-                role: 'librarian',
-                userType: 'librarian',
-                department: 'Bibliothèque'
-              };
-              actions.loginSuccess(user, ['librarian', 'read', 'write', 'manage_books']);
-              resolve();
-            } else if (email === 'teacher@enspd.cm' && password === 'teach123') {
-              const user = {
-                id: 4,
-                firstName: 'Paul',
-                lastName: 'Enseignant',
-                email: 'teacher@enspd.cm',
-                role: 'teacher',
-                userType: 'teacher',
-                department: 'Informatique',
-                specialization: 'Développement Web',
-                grade: 'Professeur Assistant'
-              };
-              actions.loginSuccess(user, ['teacher', 'read', 'recommend']);
-              resolve();
-            } else if (email === 'student@enspd.cm' && password === 'stud123') {
-              const user = {
-                id: 5,
-                firstName: 'Sophie',
-                lastName: 'Étudiante',
-                email: 'student@enspd.cm',
-                role: 'student',
-                userType: 'student',
-                department: 'Informatique',
-                matricule: 'INF2025001',
-                filiere: 'Génie Logiciel',
-                niveau: 'L3'              };
-              actions.loginSuccess(user, ['student', 'read']);
-              resolve();
-            } else {
-              actions.loginFailure('Identifiants incorrects');
-              reject(new Error('Identifiants incorrects'));
-            }
-          }, 1000);
-        });
+  return utils.withLoading('auth', async () => {
+    actions.loginRequest();
+
+    try {
+      const response = await api.post('/login', {
+        email: credentials.email,
+        mdp: credentials.password,
       });
-    },
+
+      const { token, user } = response.data;
+
+            // 🔥 Ajout logique du type utilisateur
+      if (user?.etudiant) {
+        user.userType = 'etudiant';
+      } else if (user?.enseignant) {
+        user.userType = 'enseignant';
+      } else if (user?.bibliothecaire) {
+        user.userType = 'bibliothecaire';
+      } else if (user?.role === 'admin') {
+        user.userType = 'admin';
+      }
+
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify(user));
+
+      const permissions = generatePermissions(user.role);
+      actions.loginSuccess(user, permissions);
+      utils.handleSuccess('Connexion réussie !');
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Erreur lors de la connexion';
+      actions.loginFailure(msg);
+      throw new Error(msg);
+    }
+  });
+},
+
     
-    register: async (userData) => {
-      return utils.withLoading('auth', async () => {
-        actions.loginRequest(); // Reuse the same loading state
-        
-        // Mock registration logic (replace with real API call later)
-        const { firstName, lastName, email, password, userType, department, matricule, filiere, niveau, specialization, grade } = userData;
-        
-        await new Promise((resolve, reject) => {
-          setTimeout(() => {
-            // Mock successful registration
-            if (email && password && firstName && lastName) {
-              // Check if email already exists (mock check)
-              const existingEmails = [
-                'admin@example.com',
-                'administrator@enspd.cm',
-                'librarian@enspd.cm',
-                'teacher@enspd.cm',
-                'student@enspd.cm'
-              ];
-              
-              if (existingEmails.includes(email)) {
-                actions.loginFailure('Un compte avec cette adresse email existe déjà');
-                reject(new Error('Un compte avec cette adresse email existe déjà'));
-                return;
-              }
-              
-              // Create new user based on userType
-              const newUser = {
-                id: Date.now(), // Mock ID
-                firstName,
-                lastName,
-                email,
-                role: userType || 'student',
-                userType: userType || 'student',
-                department: department || 'Non spécifié'
-              };
-              
-              // Add type-specific fields
-              if (userType === 'student') {
-                newUser.matricule = matricule || `STU${Date.now()}`;
-                newUser.filiere = filiere || 'Non spécifié';
-                newUser.niveau = niveau || 'L1';
-              } else if (userType === 'teacher') {
-                newUser.specialization = specialization || 'Non spécifié';
-                newUser.grade = grade || 'Assistant';
-              }
-              
-              // Set permissions based on user type
-              let permissions = ['read'];
-              switch (userType) {
-                case 'administrator':
-                  permissions = ['admin', 'read', 'write', 'manage_users'];
-                  break;
-                case 'librarian':
-                  permissions = ['librarian', 'read', 'write', 'manage_books'];
-                  break;
-                case 'teacher':
-                  permissions = ['teacher', 'read', 'recommend'];
-                  break;
-                default:
-                  permissions = ['student', 'read'];
-              }
-              
-              actions.loginSuccess(newUser, permissions);
-              utils.handleSuccess('Compte créé avec succès !');
-              resolve();
-            } else {
-              actions.loginFailure('Veuillez remplir tous les champs obligatoires');
-              reject(new Error('Veuillez remplir tous les champs obligatoires'));
-            }
-          }, 1500); // Slightly longer delay for registration
-        });
+   // In AppContext.jsx
+register: async (userData) => { // 'userData' here is what you passed as 'finalUserData' from Register.jsx
+  return utils.withLoading('auth', async () => {
+    actions.loginRequest();
+
+    // Your console.log from the previous step correctly showed:
+    // "Data received inside AppContext's register function:", { ..., mdp: "secret123", ... }
+    console.log("Data received inside AppContext's register function:", userData); // Use 'userData' directly here
+
+    try {
+      const basePayload = {
+        nom: userData.firstName,
+        prenom: userData.lastName,
+        email: userData.email,
+        telephone: userData.telephone || '0000000000',
+        // --- FIX STARTS HERE ---
+        mdp: userData.mdp, // Correctly use userData.mdp
+        mdp_confirmation: userData.mdp_confirmation, // Correctly use userData.mdp_confirmation
+        // --- FIX ENDS HERE ---
+        role: userData.userType,
+      };
+
+      let specificPayload = {};
+
+      if (userData.userType === 'etudiant') {
+        specificPayload = {
+          matricule: userData.matricule,
+          filiere: userData.filiere,
+          niveau: userData.niveau,
+          departement: userData.department || 'Non défini',
+        };
+      } else if (userData.userType === 'enseignant') {
+        specificPayload = {
+          specialite: userData.specialization,
+          grade: userData.grade,
+          departement: userData.department || 'Informatique',
+        };
+      } else if (userData.userType === 'bibliothecaire') {
+        specificPayload = {
+          departement: userData.department || 'Bibliothèque',
+        };
+      } else if (userData.userType === 'admin') {
+        specificPayload = {
+          departement: userData.department || 'Administration',
+          niveau: userData.niveau || null,
+        };
+      }
+
+      const response = await api.post('/register', {
+        ...basePayload,
+        ...specificPayload,
       });
-    },
-      logout: () => {
-      actions.logout();
-      utils.handleSuccess(SUCCESS_MESSAGES.LOGOUT);
-    },
+
+      // ... rest of your code
+    } catch (error) {
+      const msg = error.response?.data?.message || "Erreur lors de l'inscription";
+      actions.loginFailure(msg);
+      throw new Error(msg);
+    }
+  });
+},
+
+
+    logout: async () => {
+  try {
+    await api.post('/logout');
+  } catch (e) {
+    console.warn('Échec de la déconnexion côté serveur');
+  }
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('user');
+  actions.logout();
+  utils.handleSuccess('Déconnexion réussie');
+},
+
+  // Méthode pour initialiser l'auth depuis localStorage au démarrage
+    initializeAuth: () => {
+  const token = localStorage.getItem('authToken');
+  const userData = localStorage.getItem('user');
+  
+  if (token && userData) {
+    try {
+      const user = JSON.parse(userData);
+
+      // 🔥 Ajouter ici le type d'utilisateur pour que le menu fonctionne
+      if (user?.etudiant) {
+        user.userType = 'etudiant';
+      } else if (user?.enseignant) {
+        user.userType = 'enseignant';
+      } else if (user?.bibliothecaire) {
+        user.userType = 'bibliothecaire';
+      } else if (user?.role === 'admin') {
+        user.userType = 'admin';
+      }
+
+      const permissions = generatePermissions(user.role);
+      actions.loginSuccess(user, permissions);
+    } catch (error) {
+      console.error('Erreur lors de l\'initialisation de l\'auth:', error);
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+    }
+  }
+},
     
+
     // Email verification methods
     verifyEmail: async (token) => {
       return utils.withLoading('auth', async () => {
@@ -630,6 +647,7 @@ export const useAuth = () => {
  */
 export const useNotifications = () => {
   const { state, actions } = useApp();
+
   
   return useMemo(() => ({
     notifications: state.notifications,

@@ -148,11 +148,11 @@ const Header = () => {
                   <div className="flex items-center space-x-2 text-white">
                     <div className="w-8 h-8 bg-secondary-500 rounded-full flex items-center justify-center">
                       <span className="text-sm font-medium">
-                        {user?.firstName?.charAt(0) || "U"}
+                        {user?.prenom?.charAt(0) || "U"}
                       </span>
                     </div>
                     <span className="text-sm font-medium truncate max-w-[100px] text-neutral-400">
-                      {user?.firstName || "Utilisateur"}
+                      {user?.prenom || "Utilisateur"}
                     </span>
                     <svg className="w-4 h-4 text-white transition-transform duration-200" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" className='text-neutral-400' />
@@ -176,7 +176,7 @@ const Header = () => {
                     </Link>
 
                     {/* Liens basés sur le rôle de l'utilisateur */}
-                    {(user?.role === 'admin' || user?.role === 'administrator') && (
+                    {user?.role === 'admin' && (
                       <>
                         <hr className="border-primary-500 my-1" />
                         <Link
@@ -229,7 +229,7 @@ const Header = () => {
                       </>
                     )}
 
-                    {user?.role === 'librarian' && (
+                    {user?.role === 'bibliothecaire' && (
                       <>
                         <hr className="border-primary-500 my-1" />
                         <Link
@@ -267,7 +267,7 @@ const Header = () => {
                       </>
                     )}
 
-                    {(user?.userType === 'student' || user?.userType === 'teacher') && (
+                    {(user?.userType === 'etudiant' || user?.userType === 'enseignant') && (
                       <>
                         <hr className="border-primary-500 my-1" />
                         <Link
@@ -297,7 +297,7 @@ const Header = () => {
                       </>
                     )}
 
-                    {user?.userType === 'teacher' && (
+                    {user?.userType === 'enseignant' && (
                       <>
                         <Link
                           to="/dashboard/recommendations"

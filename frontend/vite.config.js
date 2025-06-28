@@ -23,7 +23,7 @@ export default defineConfig({
   // Configuration du serveur de développement
   server: {
     port: 5173,
-    open: true,
+    open: false,
     host: true,
   },
   

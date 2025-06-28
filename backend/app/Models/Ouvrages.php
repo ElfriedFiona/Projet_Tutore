@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Ouvrages extends Model
 {
+    use HasFactory;
     protected $fillable =[
         'categorie_id',
         'isbn',
@@ -24,7 +26,7 @@ class Ouvrages extends Model
     ];
 
     public function categorie(){
-        return $this->belongsTo(Categorie::class);
+        return $this->belongsTo(Categorie::class, 'categorie_id');
     }
     
     public function emprunt(){

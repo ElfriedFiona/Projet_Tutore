@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  BookOpen, Users, AlertTriangle, Plus, Search, Filter, 
-  Edit, Trash2, Check, X, DollarSign, Calendar, 
-  BarChart3, FileText, Star, TrendingUp, Clock, 
+import {
+  BookOpen, Users, AlertTriangle, Plus, Search, Filter,
+  Edit, Trash2, Check, X, DollarSign, Calendar,
+  BarChart3, FileText, Star, TrendingUp, Clock,
   UserPlus, BookMarked, Receipt, Settings
 } from 'lucide-react';
 import { formatPrice } from '../../utils/formatters';
 import CatalogManagement from './modules/CatalogManagement';
 import LoanManagement from './modules/LoanManagement';
 import FineManagement from './modules/FineManagement';
-import RoleNavigator from '../../components/demo/RoleNavigator';
+// Removed: import RoleNavigator from '../../components/demo/RoleNavigator'; // <-- LIGNE SUPPRIMÉE
 
 const DashboardLibrarian = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -92,7 +92,7 @@ const DashboardLibrarian = () => {
         </div>
         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
           activity.status === 'completed' || activity.status === 'paid' || activity.status === 'approved'
-            ? 'bg-green-100 text-green-800' 
+            ? 'bg-green-100 text-green-800'
             : 'bg-yellow-100 text-yellow-800'
         }`}>
           {activity.status}
@@ -126,8 +126,8 @@ const DashboardLibrarian = () => {
     <button
       onClick={() => onClick(id)}
       className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-        isActive 
-          ? 'bg-primary-600 text-white shadow-md' 
+        isActive
+          ? 'bg-primary-600 text-white shadow-md'
           : 'text-gray-600 hover:bg-gray-100'
       }`}
     >
@@ -147,12 +147,12 @@ const DashboardLibrarian = () => {
       <span className="font-medium text-gray-900">{label}</span>
     </button>
   );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50">
       <div className="p-6">
-        {/* Navigateur de rôles pour la démonstration */}
-        <RoleNavigator />
-        
+        {/* Removed: <RoleNavigator /> */} {/* <-- LIGNE SUPPRIMÉE */}
+
         {/* En-tête */}
         <div className={`mb-8 transition-all duration-500 ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
           <div className="flex items-center justify-between">
@@ -168,11 +168,11 @@ const DashboardLibrarian = () => {
             <div className="text-right">
               <p className="text-sm text-gray-500">ENSPD - Bibliothèque</p>
               <p className="text-sm font-medium text-primary-600">
-                {new Date().toLocaleDateString('fr-FR', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
+                {new Date().toLocaleDateString('fr-FR', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
                 })}
               </p>
             </div>
@@ -182,15 +182,15 @@ const DashboardLibrarian = () => {
         {/* Navigation par onglets */}
         <div className="mb-8">
           <div className="flex space-x-2 bg-white p-2 rounded-xl shadow-sm border border-gray-200">
-            <TabButton id="overview" icon={BarChart3} label="Vue d'ensemble" 
+            <TabButton id="overview" icon={BarChart3} label="Vue d'ensemble"
               isActive={activeTab === 'overview'} onClick={setActiveTab} />
-            <TabButton id="loans" icon={BookOpen} label="Emprunts" 
+            <TabButton id="loans" icon={BookOpen} label="Emprunts"
               isActive={activeTab === 'loans'} onClick={setActiveTab} />
-            <TabButton id="users" icon={Users} label="Utilisateurs" 
+            <TabButton id="users" icon={Users} label="Utilisateurs"
               isActive={activeTab === 'users'} onClick={setActiveTab} />
-            <TabButton id="catalog" icon={BookMarked} label="Catalogue" 
+            <TabButton id="catalog" icon={BookMarked} label="Catalogue"
               isActive={activeTab === 'catalog'} onClick={setActiveTab} />
-            <TabButton id="fines" icon={Receipt} label="Amendes" 
+            <TabButton id="fines" icon={Receipt} label="Amendes"
               isActive={activeTab === 'fines'} onClick={setActiveTab} />
           </div>
         </div>
@@ -200,45 +200,45 @@ const DashboardLibrarian = () => {
           <div className="space-y-8">
             {/* Statistiques principales */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <StatCard 
-                icon={BookOpen} 
-                title="Total Ouvrages" 
-                value={stats.totalBooks.toLocaleString()} 
+              <StatCard
+                icon={BookOpen}
+                title="Total Ouvrages"
+                value={stats.totalBooks.toLocaleString()}
                 subtitle="Dans le catalogue"
                 color="primary"
               />
-              <StatCard 
-                icon={Users} 
-                title="Emprunts Actifs" 
-                value={stats.totalLoans} 
+              <StatCard
+                icon={Users}
+                title="Emprunts Actifs"
+                value={stats.totalLoans}
                 subtitle="En cours"
                 color="green"
               />
-              <StatCard 
-                icon={AlertTriangle} 
-                title="Retards" 
-                value={stats.overdueLoans} 
+              <StatCard
+                icon={AlertTriangle}
+                title="Retards"
+                value={stats.overdueLoans}
                 subtitle="À traiter"
                 color="red"
               />
-              <StatCard 
-                icon={BookMarked} 
-                title="Réservations" 
-                value={stats.pendingReservations} 
+              <StatCard
+                icon={BookMarked}
+                title="Réservations"
+                value={stats.pendingReservations}
                 subtitle="En attente"
                 color="purple"
               />
-              <StatCard 
-                icon={DollarSign} 
-                title="Amendes Collectées" 
-                value={formatPrice(stats.finesCollected)} 
+              <StatCard
+                icon={DollarSign}
+                title="Amendes Collectées"
+                value={formatPrice(stats.finesCollected)}
                 subtitle="Ce mois"
                 color="yellow"
               />
-              <StatCard 
-                icon={UserPlus} 
-                title="Nouveaux Comptes" 
-                value={stats.newStudentAccounts} 
+              <StatCard
+                icon={UserPlus}
+                title="Nouveaux Comptes"
+                value={stats.newStudentAccounts}
                 subtitle="Cette semaine"
                 color="blue"
               />
@@ -290,7 +290,8 @@ const DashboardLibrarian = () => {
               </div>
             </div>
           </div>
-        )}        {activeTab === 'loans' && <LoanManagement />}
+        )}
+        {activeTab === 'loans' && <LoanManagement />}
 
         {activeTab === 'users' && (
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
@@ -309,7 +310,9 @@ const DashboardLibrarian = () => {
               </p>
             </div>
           </div>
-        )}        {activeTab === 'catalog' && <CatalogManagement />}        {activeTab === 'fines' && <FineManagement />}
+        )}
+        {activeTab === 'catalog' && <CatalogManagement />}
+        {activeTab === 'fines' && <FineManagement />}
       </div>
     </div>
   );

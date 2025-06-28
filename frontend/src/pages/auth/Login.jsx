@@ -11,20 +11,58 @@ import { useAuth } from '../../context/AppContext';
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [formErrors, setFormErrors] = useState({});
-  const [localError, setLocalError] = useState(''); // État local uniquement
+  const [localError, setLocalError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
-  const { login, loading, user } = useAuth(); // Pas d'error: authError
+  const { login, loading, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/dashboard';
 
-  // Redirection si déjà connecté
+  // Nous n'aurons plus besoin de 'from' ici car la redirection sera basée sur le rôle après la connexion.
+  // const from = location.state?.from?.pathname || '/dashboard'; // Supprimé
+
+  // --- NOUVEAU useEffect pour gérer la redirection APRÈS connexion et récupération du rôle ---
   useEffect(() => {
     if (user) {
-      navigate(from, { replace: true });
+      // User est connecté, nous pouvons maintenant le rediriger en fonction de son rôle
+      console.log('User connected, role:', user.role); // Pour le débogage
+
+      switch (user.role) {
+        case 'student':
+        case 'etudiant':
+        case 'teacher':
+        case 'enseignant':
+          // Rediriger les étudiants et enseignants vers le tableau de bord par défaut
+          navigate('/dashboard', { replace: true });
+          break;
+        case 'librarian':
+        case 'bibliothecaire':
+          // Rediriger les bibliothécaires vers leur propre tableau de bord
+          navigate('/dashboard/librarian', { replace: true });
+          break;
+        case 'admin':
+          // Rediriger les administrateurs vers leur tableau de bord
+          navigate('/dashboard/administrator', { replace: true });
+          break;
+        default:
+          // Gérer les rôles inconnus ou non spécifiés
+          console.warn('Rôle utilisateur inconnu ou non géré:', user.role);
+          navigate('/access-denied', { replace: true }); // Ou une page d'accueil générique
+          break;
+      }
     }
-  }, [user, navigate, from]);
+  }, [user, navigate]); // Dépend de `user` pour se déclencher quand l'état de connexion change
+
+  // Garder ce useEffect pour l'affichage du message "Compte créé avec succès"
+  useEffect(() => {
+    if (location.state?.registered) {
+      const timer = setTimeout(() => {
+        // Clear the state by navigating to the same path without state
+        navigate(location.pathname, { replace: true, state: {} });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [location, navigate]);
 
   // Nettoyer l'erreur locale au montage
   useEffect(() => {
@@ -57,7 +95,6 @@ const Login = () => {
       [name]: value
     }));
 
-    // Clear error when user types
     if (formErrors[name]) {
       setFormErrors(prev => ({
         ...prev,
@@ -65,16 +102,19 @@ const Login = () => {
       }));
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLocalError(''); // Clear local error
+    setLocalError('');
 
     if (validateForm()) {
       try {
+        // L'appel à `login(formData)` met à jour l'état `user` dans `AppContext`.
+        // C'est cette mise à jour qui déclenchera le `useEffect` ci-dessus pour la redirection.
         await login(formData);
+        // Pas besoin de redirection ici, le `useEffect` s'en chargera
       } catch (err) {
         console.error('Login error:', err);
-        // Capturer l'erreur localement
         setLocalError(err.message || 'Erreur de connexion. Veuillez réessayer.');
       }
     }
@@ -83,15 +123,10 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        {/* Breadcrumbs */}
         <Breadcrumbs />
-
-        {/* Back Button */}
         <BackButton className="mb-4" />
 
-        {/* Auth Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl mb-4 animate-pulse-shadow">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,35 +137,42 @@ const Login = () => {
               Connexion
             </h2>
             <p className="mt-2 text-neutral-600">
-              Accédez à votre espace étudiant
-            </p>
+              Accédez à votre espace
+            </p> {/* J'ai simplifié le texte ici pour être plus générique */}
           </div>
 
-          {/* Error Alert */}
           {(localError) && (
             <div className="mb-6">
-              <ErrorAlert 
+              <ErrorAlert
                 message={localError}
                 onClose={() => setLocalError('')}
               />
             </div>
           )}
 
-          {/* Form */}
+          {location.state?.registered && (
+            <div className="mb-6">
+              <div className="bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded-xl text-sm shadow-sm animate-fade-in">
+                ✅ Compte créé avec succès. Veuillez vous connecter.
+              </div>
+            </div>
+          )}
+
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">              <FormInput
-              id="email"
-              name="email"
-              type="email"
-              label="Email"
-              autoComplete="email"
-              value={formData.email}
-              onChange={handleChange}
-              error={formErrors.email}
-              placeholder="votre.email@enspd.edu"
-              required
-              className="transition-all duration-300 focus:scale-[1.02]"
-            />
+            <div className="space-y-4">
+              <FormInput
+                id="email"
+                name="email"
+                type="email"
+                label="Email"
+                autoComplete="email"
+                value={formData.email}
+                onChange={handleChange}
+                error={formErrors.email}
+                placeholder="votre.email@enspd.edu"
+                required
+                className="transition-all duration-300 focus:scale-[1.02]"
+              />
 
               <PasswordInput
                 id="password"
@@ -146,7 +188,6 @@ const Login = () => {
               />
             </div>
 
-            {/* Remember me & Forgot password */}
             <div className="flex items-center justify-between">
               <label className="flex items-center group cursor-pointer">
                 <input
@@ -160,7 +201,8 @@ const Login = () => {
                 <span className="ml-3 text-sm text-neutral-700 group-hover:text-primary-600 transition-colors">
                   Se souvenir de moi
                 </span>
-              </label>              <Link
+              </label>
+              <Link
                 to="/forgot-password"
                 onClick={() => {
                   setLocalError('');
@@ -171,11 +213,11 @@ const Login = () => {
               </Link>
             </div>
 
-            {/* Submit button */}
             <button
               type="submit"
-              disabled={loading}              className={`group relative w-full flex justify-center items-center py-3 px-4 border border-transparent text-sm font-semibold rounded-2xl text-white transition-all duration-300 transform ${loading
-                ? 'bg-gradient-to-r from-neutral-400 to-neutral-500 cursor-not-allowed': 'bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary-500/25 active:scale-[0.98]'
+              disabled={loading}
+              className={`group relative w-full flex justify-center items-center py-3 px-4 border border-transparent text-sm font-semibold rounded-2xl text-white transition-all duration-300 transform ${loading
+                ? 'bg-gradient-to-r from-neutral-400 to-neutral-500 cursor-not-allowed' : 'bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary-500/25 active:scale-[0.98]'
                 } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500`}
             >
               {loading ? (
@@ -194,7 +236,6 @@ const Login = () => {
             </button>
           </form>
 
-          {/* Footer */}
           <div className="mt-8 text-center">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -204,7 +245,8 @@ const Login = () => {
                 <span className="px-4 bg-white text-neutral-500">Nouveau sur ENSPD?</span>
               </div>
             </div>
-            <div className="mt-4 space-y-3">              <Link
+            <div className="mt-4 space-y-3">
+              <Link
                 to="/register"
                 onClick={() => {
                   setLocalError('');

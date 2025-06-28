@@ -8,7 +8,7 @@ class Emprunt extends Model
 {
     protected $fillable =[
         'user_id',
-        'ouvrage_id',
+        'ouvrages_id',
         'dateEmprunt',
         'dateRetourPrevu',
         'dateRetourEffectif',
@@ -16,6 +16,7 @@ class Emprunt extends Model
         'etatRetour',
         'nbProlongations',
         'notes',
+        'statut',
     ];
 
     public function user(){
@@ -23,7 +24,7 @@ class Emprunt extends Model
     }
     
     public function ouvrage(){
-        return $this->belongsTo(Ouvrages::class);
+        return $this->belongsTo(Ouvrages::class, 'ouvrages_id');
     }
     
     public function amende(){

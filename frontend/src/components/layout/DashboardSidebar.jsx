@@ -3,14 +3,41 @@ import { NavLink, Link } from 'react-router-dom';
 import { Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import useBreakpoint from '../../hooks/useBreakpoint';
 import '../../styles/sidebar.css';
+import axios from 'axios'; // Assuming you have axios installed for API calls
+import api from '../../services/apiService';
 
 const DashboardSidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [userType, setUserType] = useState('student');
+  const [userType, setUserType] = useState(null); // Initialize as null to indicate not yet loaded
+  const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
 
   // Hook pour gérer les breakpoints responsives
-  const { isMobile, isTablet, isDesktop, breakpoint } = useBreakpoint();  // Gérer le resize pour fermer le menu mobile automatiquement et ajuster l'état
+  const { isMobile, isTablet, isDesktop } = useBreakpoint();
+
+  // Fetch user profile on component mount
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await api.get('/profile'); // Make GET request to your /profile endpoint
+        const userData = response.data.user;
+        setUserType(userData.role); // Set userType based on the 'role' attribute from the backend
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
+        setError("Failed to load user profile.");
+        setLoading(false);
+        // Optionally, set a default user type or redirect to login
+        setUserType('student'); // Fallback to a default role if API fails
+      }
+    };
+
+    fetchUserProfile();
+  }, []); // Empty dependency array means this runs once on mount
+
+  // Gérer le resize pour fermer le menu mobile automatiquement et ajuster l'état
   useEffect(() => {
     // Fermer le menu mobile automatiquement sur desktop
     if (isDesktop) {
@@ -226,29 +253,24 @@ const DashboardSidebar = () => {
   const getMenuItems = () => {
     if (userType === 'admin' || userType === 'administrator') {
       return administratorMenuItems;
-    } else if (userType === 'librarian') {
+    } else if (userType === 'bibliothecaire') {
       return librarianMenuItems;
-    } else if (userType === 'teacher') {
+    } else if (userType === 'enseignant') {
       return teacherMenuItems;
     } else {
-      return studentMenuItems;
+      return studentMenuItems; // Default for 'student' or if userType is null/unrecognized
     }
   };
 
   const menuItems = getMenuItems();
 
-  // Mock user data for display - utilise l'état local au lieu du contexte
+  // Placeholder for user details until fetched
   const mockUser = {
-    firstName: userType === 'admin' || userType === 'administrator' ? 'Admin' :
-      userType === 'librarian' ? 'Bibliothécaire' :
-        userType === 'teacher' ? 'Professeur' : 'Étudiant',
-    lastName: 'Test',
+    firstName: loading ? 'Chargement...' : (userType === 'admin' || userType === 'administrator' ? 'Admin' :
+      userType === 'bibliothecaire' ? 'bibliothecaire' :
+        userType === 'enseignant' ? 'enseignant' : 'etudiant'),
+    lastName: loading ? '' : 'Utilisateur',
     userType: userType
-  };
-
-  // Fonction pour changer le type d'utilisateur (navigation manuelle)
-  const handleUserTypeChange = (newUserType) => {
-    setUserType(newUserType);
   };
 
   // Fonction pour gérer le toggle de la sidebar desktop
@@ -265,13 +287,33 @@ const DashboardSidebar = () => {
   const handleMenuItemClick = () => {
     setIsMobileMenuOpen(false);
   };
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-100 bg-opacity-75 z-[9999]">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary-500"></div>
+          <p className="mt-4 text-primary-700 font-semibold">Chargement du profil...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-red-100 bg-opacity-75 z-[9999] text-red-700 font-semibold">
+        <p>{error} Veuillez rafraîchir la page ou contacter l'administrateur.</p>
+      </div>
+    );
+  }
+
   return (
     <>
-      {/* Bouton menu burger pour mobile/tablet (visible jusqu'à md) */}      
+      {/* Bouton menu burger pour mobile/tablet (visible jusqu'à md) */}
       <button
         className={`
-          md:hidden fixed top-4 left-4 z-[9999] p-3 
-          bg-gradient-to-r from-primary-500 to-primary-600 
+          md:hidden fixed top-4 left-4 z-[9999] p-3
+          bg-gradient-to-r from-primary-500 to-primary-600
           rounded-lg shadow-lg border border-primary-200
           hover:from-primary-600 hover:to-primary-700
           transform transition-all duration-300 ease-in-out
@@ -302,11 +344,11 @@ const DashboardSidebar = () => {
           `}
           onClick={handleMobileMenuToggle}
         />
-      )}      
-      
+      )}
+
       {/* Sidebar Mobile/Tablet - Overlay jusqu'à lg avec largeur responsive */}
       <div className={`
-        lg:hidden fixed inset-y-0 left-0 z-50 
+        lg:hidden fixed inset-y-0 left-0 z-50
         w-64 md:w-72
         bg-white border-r border-gray-200 shadow-2xl
         transform transition-all duration-300 ease-in-out
@@ -343,30 +385,15 @@ const DashboardSidebar = () => {
                 {mockUser?.firstName} {mockUser?.lastName}
               </p>
               <p className="text-xs text-gray-500 truncate">
-                {mockUser?.userType === 'student' ? 'Étudiant' :
-                  mockUser?.userType === 'teacher' ? 'Enseignant' :
-                    mockUser?.userType === 'librarian' ? 'Bibliothécaire' : 'Administrateur'}
+                {userType === 'etudiant' ? 'Etudiant' :
+                  userType === 'enseignant' ? 'Enseignant' :
+                    userType === 'bibliothecaire' ? 'Bibliothecaire' : 'Administrateur'}
               </p>
             </div>
           </div>
-
-          {/* Sélecteur de rôle mobile */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Simuler le rôle :
-            </label>
-            <select
-              value={userType}
-              onChange={(e) => handleUserTypeChange(e.target.value)}
-              className="w-full text-xs bg-gray-50 border border-gray-200 rounded-md px-2 py-1 focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
-            >
-              <option value="student">👨‍🎓 Étudiant</option>
-              <option value="teacher">👨‍🏫 Enseignant</option>
-              <option value="librarian">📚 Bibliothécaire</option>
-              <option value="administrator">🛡️ Administrateur</option>
-            </select>
-          </div>
-        </div>        {/* Navigation mobile avec scrollbar personnalisée */}
+          {/* Removed manual role selector for production use as it's now dynamic */}
+        </div>
+        {/* Navigation mobile avec scrollbar personnalisée */}
         <nav className="flex-1 p-4 overflow-y-auto sidebar-nav">
           <ul className="space-y-2">
             {menuItems.map((item, index) => (
@@ -410,7 +437,8 @@ const DashboardSidebar = () => {
           </button>
           <div className="mt-3 text-xs text-gray-500 text-center">
             Version 1.0.0
-          </div>        </div>
+          </div>
+        </div>
       </div>
 
       {/* Sidebar Tablet - visible de md à lg (768px à 1024px) */}
@@ -433,7 +461,8 @@ const DashboardSidebar = () => {
               </span>
             </div>
           </Link>
-        </div>        {/* Navigation tablet - icônes seulement avec animations */}
+        </div>
+        {/* Navigation tablet - icônes seulement avec animations */}
         <nav className="flex-1 p-2 overflow-y-auto sidebar-nav">
           <ul className="space-y-2">
             {menuItems.map((item, index) => (
@@ -479,7 +508,7 @@ const DashboardSidebar = () => {
       {/* Sidebar Desktop - visible à partir de lg */}
       <div className={`
         hidden lg:flex
-        ${isCollapsed ? 'w-18' : 'w-64'} 
+        ${isCollapsed ? 'w-18' : 'w-64'}
         fixed left-0 top-0 h-screen z-50
         bg-white border-r border-gray-200 shadow-lg shadow-gray-300/50
         transition-all duration-300 ease-in-out
@@ -490,8 +519,8 @@ const DashboardSidebar = () => {
           {/* Logo adaptatif */}
           <Link
             to="/"
-            className={`font-semibold flex items-center group transform hover:scale-105 transition-all duration-300 
-                       ${isCollapsed ? 'justify-center py-4' : ''}`}
+            className={`font-semibold flex items-center group transform hover:scale-105 transition-all duration-300
+                        ${isCollapsed ? 'justify-center py-4' : ''}`}
           >
             <div className={`transition-all duration-300 ${isCollapsed ? 'transform scale-90' : ''}`}>
               {!isCollapsed ? (
@@ -550,31 +579,16 @@ const DashboardSidebar = () => {
                   {mockUser?.firstName} {mockUser?.lastName}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
-                  {mockUser?.userType === 'student' ? 'Étudiant' :
-                    mockUser?.userType === 'teacher' ? 'Enseignant' :
-                      mockUser?.userType === 'librarian' ? 'Bibliothécaire' : 'Administrateur'}
+                  {userType === 'etudiant' ? 'Etudiant' :
+                    userType === 'enseignant' ? 'Enseignant' :
+                      userType === 'bibliothecaire' ? 'bibliothecaire' : 'Administrateur'}
                 </p>
               </div>
             </div>
-
-            {/* Sélecteur de rôle desktop */}
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                Simuler le rôle :
-              </label>
-              <select
-                value={userType}
-                onChange={(e) => handleUserTypeChange(e.target.value)}
-                className="w-full text-xs bg-gray-50 border border-gray-200 rounded-md px-2 py-1 focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
-              >
-                <option value="student">👨‍🎓 Étudiant</option>
-                <option value="teacher">👨‍🏫 Enseignant</option>
-                <option value="librarian">📚 Bibliothécaire</option>
-                <option value="administrator">🛡️ Administrateur</option>
-              </select>
-            </div>
+            {/* Removed manual role selector for production use as it's now dynamic */}
           </div>
-        )}        {/* Navigation desktop avec animations */}
+        )}
+        {/* Navigation desktop avec animations */}
         <nav className="flex-1 p-4 overflow-y-auto sidebar-nav">
           <ul className="space-y-2">
             {menuItems.map((item, index) => (

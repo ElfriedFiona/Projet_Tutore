@@ -95,4 +95,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(Amende::class);
     }
+
+        public function maxConcurrentEmprunts()
+    {
+        return match ($this->role) {
+            'student', 'étudiant' => 1,
+            'teacher', 'enseignant' => 3,
+            'librarian', 'bibliothécaire' => 0,
+            'admin', 'administrator' => 5,
+            default => 1,
+        };
+    }
 }

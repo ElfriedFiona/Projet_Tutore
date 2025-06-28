@@ -8,146 +8,108 @@ import ResponsiveDashboardContainer, {
   ResponsiveDashboardActions
 } from '../../components/dashboard/ResponsiveDashboardContainer';
 import useResponsiveDashboard from '../../hooks/useResponsiveDashboard';
+import api from '../../services/apiService'
 
 const DashboardLoans = () => {
-  const [activeTab, setActiveTab] = useState('current');
-  const [animate, setAnimate] = useState(false);
-  const { getGridConfig, isMobile } = useResponsiveDashboard();
+const [currentLoans, setCurrentLoans] = useState([]);
+const [loanHistory, setLoanHistory] = useState([]);
+const [activeTab, setActiveTab] = useState('current');
+const [animate, setAnimate] = useState(false);
+const { getGridConfig, isMobile } = useResponsiveDashboard();
+const [activeLoansCount, setActiveLoansCount] = useState(0);
 
-  useEffect(() => {
-    setAnimate(true);
-  }, []);
-
-  // Enhanced mock data with comprehensive book information
-  const currentLoans = [
-    {
-      id: 1,
-      title: "Introduction à l'Informatique",
-      author: "John Doe",
-      isbn: "978-0123456789",
-      borrowDate: "2024-11-15",
-      dueDate: "2024-12-15",
-      status: "En cours",
-      renewals: 0,
-      maxRenewals: 2,
-      coverImage: "/images/books/book1.jpg",
-      category: "Informatique",
-      pages: 320,
-      language: "Français",
-      condition: "Excellent"
-    },
-    {
-      id: 2,
-      title: "Mathématiques Appliquées",
-      author: "Jane Smith",
-      isbn: "978-0987654321",
-      borrowDate: "2024-11-20",
-      dueDate: "2024-12-01", // Past due date for demo
-      status: "En retard",
-      renewals: 1,
-      maxRenewals: 2,
-      coverImage: "/images/books/book2.jpg",
-      category: "Mathématiques",
-      pages: 480,
-      language: "Français",
-      condition: "Bon"
-    },
-    {
-      id: 3,
-      title: "Physique Quantique Avancée",
-      author: "Albert Einstein",
-      isbn: "978-0456789123", borrowDate: "2024-11-25",
-      dueDate: "2024-12-25",
-      status: "En cours",
-      renewals: 0,
-      maxRenewals: 2,
-      coverImage: "/images/books/book3.jpg",
-      category: "Physique",
-      pages: 650,
-      language: "Français",
-      condition: "Très bon"
-    },
-    {
-      id: 4,
-      title: "Intelligence Artificielle: Une approche moderne",
-      author: "Stuart Russell & Peter Norvig",
-      isbn: "978-0321545893",
-      borrowDate: "2024-11-28",
-      dueDate: "2024-12-28",
-      status: "En cours",
-      renewals: 2,
-      maxRenewals: 2,
-      coverImage: "/images/books/book4.jpg",
-      category: "IA",
-      pages: 1152,
-      language: "Français",
-      condition: "Bon"
-    }
-  ];
-
-  const loanHistory = [
-    {
-      id: 5,
-      title: "Histoire de l'Art Contemporain",
-      author: "Marie Dubois",
-      isbn: "978-0741852963",
-      borrowDate: "2024-10-01",
-      returnDate: "2024-10-28",
-      status: "Retourné",
-      coverImage: "/images/books/book5.jpg",
-      category: "Art",
-      pages: 280,
-      language: "Français",
-      rating: 4.5
-    },
-    {
-      id: 6,
-      title: "Chimie Organique Fondamentale",
-      author: "Paul Martin",
-      isbn: "978-0852741963",
-      borrowDate: "2024-09-15",
-      returnDate: "2024-10-10",
-      status: "Retourné",
-      coverImage: "/images/books/book6.jpg",
-      category: "Chimie",
-      pages: 420,
-      language: "Français",
-      rating: 4.2
-    },
-    {
-      id: 7,
-      title: "Psychologie Cognitive",
-      author: "Sarah Johnson",
-      isbn: "978-0963258741",
-      borrowDate: "2024-08-20",
-      returnDate: "2024-09-18",
-      status: "Retourné",
-      coverImage: "/images/books/book7.jpg",
-      category: "Psychologie",
-      pages: 360,
-      language: "Français",
-      rating: 4.8
-    }
-  ];
-
-  // Enhanced helper functions
-  const handleRenew = (loanId) => {
-    console.log('Renouveler l\'emprunt:', loanId);
-    const button = document.querySelector(`[data-renew="${loanId}"]`);
-    if (button) {
-      button.classList.add('animate-pulse');
-      setTimeout(() => button.classList.remove('animate-pulse'), 1000);
-    }
+// Fonction pour formater un emprunt
+const formatLoan = (e) => {
+  return {
+    id: e.id,
+    title: e.ouvrage.titre || "Titre inconnu",
+    author: e.ouvrage.auteur || "Auteur inconnu",
+    isbn: e.ouvrage.isbn || "",
+    borrowDate: e.dateEmprunt || e.created_at,
+    dueDate: e.dateRetourPrevu || "",
+    returnDate: e.dateRetourEffectif || "",
+    status: e.statut === 'en cours' && new Date(e.dateRetourPrevu) < new Date()
+      ? 'En retard'
+      : e.statut === 'terminé'
+      ? 'Retourné'
+      : e.statut,
+    renewals: e.nbProlongations || 0,
+    maxRenewals: 3,
+    coverImage: `http://localhost:8000/${e.ouvrage.imageCouverture}` || '/images/books/default.jpg',
+    category: e.ouvrage.categorie?.nom || "Inconnu",
+    pages: e.ouvrage.nbPages || 0,
+    language: e.ouvrage.langue || "Français",
+    condition: e.etatRetour || "",
   };
+};
+
+// --- Nouvelle fonction pour charger les emprunts ---
+const fetchLoans = () => {
+  api.get('/emprunts')
+    .then(response => {
+      const data = response.data;
+      const actifs = data.filter(e => e.statut === 'en cours');
+      const termines = data.filter(e => e.statut === 'terminé');
+
+      setCurrentLoans(data.map(formatLoan));
+      setLoanHistory(termines.map(formatLoan));
+      setActiveLoansCount(actifs.length);
+    })
+    .catch(error => {
+      console.error("Erreur lors du chargement des emprunts :", error);
+    });
+};
+
+// Appeler fetchLoans au montage du composant
+useEffect(() => {
+  setAnimate(true); // Si c'est pour une animation à l'initialisation
+  fetchLoans();
+}, []); // Le tableau vide signifie que cet effet ne s'exécute qu'une fois au montage
+
+const handleRenew = (loanId) => {
+  api.post(`/emprunts/${loanId}/prolonger`)
+    .then(() => {
+      // Re-fetch data après un renouvellement réussi
+      fetchLoans();
+      alert("Prêt renouvelé avec succès !"); // Un petit feedback utilisateur est toujours bien
+    })
+    .catch(err => alert("Impossible de renouveler : " + err.response.data.message));
+};
 
   const handleReturn = (loanId) => {
-    console.log('Retourner le livre:', loanId);
-    const card = document.querySelector(`[data-loan="${loanId}"]`);
-    if (card) {
-      card.classList.add('animate-bounce');
-      setTimeout(() => card.classList.remove('animate-bounce'), 500);
-    }
+    api.post(`/emprunts/${loanId}/retour`, {
+      etatRetour: 'Bon',
+      notes: ''
+    })
+    .then((res) => {
+      fetchLoans(); // recharge les emprunts
+      alert(res.data.message); // utilise le message réel du backend
+    })
+    .catch(err => {
+      const msg = err.response?.data?.message || "Une erreur est survenue.";
+      alert("Erreur de retour : " + msg);
+    });
   };
+
+
+  // Enhanced helper functions
+  // const handleRenew = (loanId) => {
+  //   console.log('Renouveler l\'emprunt:', loanId);
+  //   const button = document.querySelector(`[data-renew="${loanId}"]`);
+  //   if (button) {
+  //     button.classList.add('animate-pulse');
+  //     setTimeout(() => button.classList.remove('animate-pulse'), 1000);
+  //   }
+  // };
+
+  // const handleReturn = (loanId) => {
+  //   console.log('Retourner le livre:', loanId);
+  //   const card = document.querySelector(`[data-loan="${loanId}"]`);
+  //   if (card) {
+  //     card.classList.add('animate-bounce');
+  //     setTimeout(() => card.classList.remove('animate-bounce'), 500);
+  //   }
+  // };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -256,7 +218,7 @@ const DashboardLoans = () => {
               <div className="flex flex-wrap gap-4 sm:gap-6">
                 <div className="text-center group">
                   <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300 mb-2">
-                    <span className="text-xl font-bold">{currentLoans.length}</span>
+                    <span className="text-xl font-bold">{activeLoansCount}</span>
                   </div>
                   <div className="text-sm font-medium text-gray-700">Emprunts actifs</div>
                 </div>
@@ -370,9 +332,13 @@ const DashboardLoans = () => {
                     <div className="flex flex-col lg:flex-row gap-6">
                       {/* Enhanced book image */}
                       <div className="flex-shrink-0">
-                        <div className="relative group">                          <div className="w-28 h-40 bg-gradient-to-br from-primary-100 via-secondary-100 to-primary-100 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-105">
-                          <span className="text-4xl">{getBookIcon(loan.category)}</span>
-                        </div>
+                        <div className="relative group">
+                          {/* MODIFICATION ICI : Remplacement de l'icône par l'image de couverture */}
+                          <img
+                            src={loan.coverImage} 
+                            alt={`Couverture de ${loan.title}`}
+                            className="w-28 h-40 object-cover rounded-2xl shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-105"
+                          />
                           <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center shadow-lg">
                             <span className="text-white text-xs font-bold">{loan.renewals}</span>
                           </div>
@@ -392,7 +358,8 @@ const DashboardLoans = () => {
 
                               {/* Category */}
                               <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(loan.category)}`}>
-                                {getBookIcon(loan.category)} {loan.category}
+                                {/* MODIFICATION ICI : Remplacement de l'icône de catégorie par un emoji générique de livre */}
+                                <span className="mr-1">📚</span> {loan.category}
                               </span>
                             </div>
 
@@ -429,8 +396,8 @@ const DashboardLoans = () => {
 
                               {loan.status === 'En cours' && (
                                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${urgencyLevel === 'urgent' ? 'bg-orange-100 text-orange-800' :
-                                    urgencyLevel === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-                                      'bg-green-100 text-green-800'
+                                  urgencyLevel === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-green-100 text-green-800'
                                   }`}>
                                   {daysRemaining > 0 ? `${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} restant${daysRemaining > 1 ? 's' : ''}` : 'À rendre aujourd\'hui'}
                                 </span>

@@ -24,6 +24,7 @@ import {
   ResponsiveTwoColumns
 } from '../components/common/ResponsiveComponents';
 import { useToast } from '../context/ToastContext';
+import api from '../services/apiService';
 
 const BookDetail = () => {
   const { id } = useParams();
@@ -69,125 +70,93 @@ const BookDetail = () => {
   // Simulation de chargement des données
   useEffect(() => {
     const fetchBookDetails = async () => {
-      try {
-        setLoading(true);
-        
-        // Simulation d'appel API
-        await new Promise(resolve => setTimeout(resolve, 1200));
-        
-        const mockBooks = [
-          {
-            id: '1',
-            title: 'Les Misérables',
-            author: 'Victor Hugo',
-            coverImage: 'https://via.placeholder.com/400x600/1e3a7b/ffffff?text=Les+Misérables',
-            description: 'Un chef-d\'œuvre de la littérature française qui suit l\'histoire de Jean Valjean, un ancien forçat cherchant la rédemption dans la France post-révolutionnaire du 19e siècle. Cette épopée magistrale explore les thèmes universels de la justice, de l\'amour, de la rédemption et de la condition humaine à travers un récit captivant et profondément émouvant.',
-            fullDescription: 'Les Misérables est bien plus qu\'un simple roman ; c\'est une fresque sociale monumentale qui dépeint la France du XIXe siècle avec une précision saisissante. Victor Hugo y développe ses idées sur la justice sociale, la pauvreté, et la rédemption à travers des personnages inoubliables comme Jean Valjean, Javert, Fantine, et Cosette. L\'œuvre aborde des thèmes intemporels qui résonnent encore aujourd\'hui : l\'injustice sociale, la quête de liberté, l\'amour paternel, et la possibilité de rachat pour tout être humain.',
-            category: 'Littérature Classique',
-            subcategory: 'Roman français du XIXe siècle',
-            available: true,
-            isbn: '978-2-07-036454-4',
-            publisher: 'Gallimard',
-            publishDate: '1862',
-            pages: 1232,
-            language: 'Français',
-            location: 'Section A - Littérature, Étagère 3, Niveau 2',
-            borrowCount: 124,
-            reservationCount: 8,
-            rating: 4.8,
-            reviewCount: 45,
-            tags: ['Classique', 'Roman historique', 'Littérature française', 'XIXe siècle', 'Hugo'],
-            edition: '3ème édition',
-            condition: 'Excellent',
-            deweyDecimal: '843.7',
-            subjects: ['Littérature française', 'Roman social', 'Histoire de France'],
-            targetAudience: ['Étudiants en littérature', 'Lycéens', 'Grand public'],
-            relatedBooks: [
-              { id: '2', title: 'Notre-Dame de Paris', author: 'Victor Hugo' },
-              { id: '3', title: 'Le Rouge et le Noir', author: 'Stendhal' }
-            ]
-          },
-          {
-            id: '2',
-            title: 'Introduction à l\'Algorithmique',
-            author: 'Thomas H. Cormen',
-            coverImage: 'https://via.placeholder.com/400x600/059669/ffffff?text=Algorithmique',
-            description: 'Manuel de référence incontournable pour l\'étude des algorithmes et structures de données. Couvre de manière exhaustive les concepts fondamentaux avec des exemples pratiques et des analyses de complexité détaillées.',
-            fullDescription: 'Ce livre est la référence mondiale pour l\'enseignement de l\'algorithmique. Il présente de manière claire et rigoureuse les algorithmes fondamentaux et les structures de données essentielles. Chaque chapitre comprend des exercices pratiques, des analyses de complexité, et des implémentations détaillées. Indispensable pour les étudiants en informatique et les professionnels du développement.',
-            category: 'Informatique',
-            subcategory: 'Algorithmes et structures de données',
-            available: false,
-            isbn: '978-2-10-054526-1',
-            publisher: 'Dunod',
-            publishDate: '2009',
-            pages: 1312,
-            language: 'Français',
-            location: 'Section C - Sciences, Étagère 12, Niveau 1',
-            borrowCount: 198,
-            reservationCount: 15,
-            rating: 4.6,
-            reviewCount: 67,
-            tags: ['Informatique', 'Algorithmes', 'Programmation', 'Structures de données'],
-            edition: '4ème édition',
-            condition: 'Bon',
-            deweyDecimal: '005.1',
-            subjects: ['Informatique théorique', 'Algorithmique', 'Programmation'],
-            targetAudience: ['Étudiants en informatique', 'Ingénieurs', 'Développeurs'],
-            relatedBooks: [
-              { id: '4', title: 'Structure et Interprétation des Programmes Informatiques', author: 'Harold Abelson' }
-            ]
-          }
-        ];
+  try {
+    setLoading(true);
+    const response = await api.get(`/ouvrages/${id}`);
+    const data = response.data;
 
-        const foundBook = mockBooks.find(b => b.id === id);
-        
-        if (foundBook) {
-          setBook(foundBook);
-        } else {
-          setApiError('Livre non trouvé dans notre catalogue.');
-        }
-      } catch (err) {
-        console.error('Erreur lors du chargement:', err);
-        setApiError('Erreur lors du chargement des détails du livre.');
-      } finally {
-        setLoading(false);
-      }
-    };
+    setBook({
+      id: data.id,
+      title: data.titre,
+      author: data.auteur,
+      coverImage: `http://localhost:8000/${data.imageCouverture}`,
+      description: data.description,
+      fullDescription: data.description_longue || '',
+      category: data.categorie?.nom || 'Inconnue',
+      subcategory: data.sousCategorie?.nom || '',
+      available: data.statut === 'disponible',
+      isbn: data.isbn,
+      publisher: data.editeur,
+      publishDate: data.anneePublication,
+      pages: data.nbPages,
+      language: data.langue,
+      location: data.emplacement || '',
+      borrowCount: data.nbrEmprunts || 0,
+      reservationCount: data.nbrReservations || 0,
+      rating: data.noteMoyenne || 0,
+      reviewCount: data.nbAvis || 0,
+      tags: data.tags || [],
+      edition: data.edition || '',
+      condition: data.etat || '',
+      deweyDecimal: data.classificationDewey || '',
+      subjects: data.sujets || [],
+      targetAudience: data.publicCible || [],
+      relatedBooks: data.livresSimilaires || []
+    });
+  } catch (err) {
+    console.error('Erreur lors du chargement du livre:', err);
+    setApiError("Livre introuvable ou erreur serveur.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
     if (id) {
       fetchBookDetails();
     }
   }, [id]);
+
   const handleReserve = useCallback(async () => {
-    if (!isAuthenticated) {
-      error('Veuillez vous connecter pour réserver ce livre.');
-      navigate('/login');
-      return;
-    }
+  if (!isAuthenticated) {
+    error('Veuillez vous connecter pour réserver ce livre.');
+    navigate('/login');
+    return;
+  }
 
-    if (!book?.available) {
-      error('Ce livre n\'est pas disponible actuellement.');
-      return;
-    }
+  if (!book?.available) {
+    error('Ce livre n\'est pas disponible actuellement.');
+    return;
+  }
 
-    setIsReserving(true);
-    
-    try {
-      // Simulation d'appel API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      success('Livre réservé avec succès ! Vous recevrez un email de confirmation.');
-      
-      // Mettre à jour l'état local
-      setBook(prev => ({
-        ...prev,
-        available: false,
-        reservationCount: prev.reservationCount + 1
-      }));    } catch {
+  setIsReserving(true);
+
+  try {
+    // ✅ Appel direct vers l'API Laravel pour créer un emprunt
+    await api.post('/emprunts', {
+      ouvrages_id: book.id,
+    });
+
+    success('Demande d\'emprunt envoyée. Vous serez notifié lorsque le livre sera prêt.');
+
+    // Mise à jour locale de l'état du livre (optionnel pour UI immédiat)
+    setBook(prev => ({
+      ...prev,
+      available: false,
+      reservationCount: prev.reservationCount + 1,
+    }));
+  } catch (err) {
+    console.error('Erreur réservation:', err);
+
+    if (err.response?.status === 400 && err.response?.data?.message) {
+      error(err.response.data.message);
+    } else {
       error('Erreur lors de la réservation. Veuillez réessayer.');
-    } finally {
-      setIsReserving(false);
     }
-  }, [isAuthenticated, book?.available, error, navigate, success]);
+  } finally {
+    setIsReserving(false);
+  }
+}, [isAuthenticated, book?.available, book?.id, error, navigate, success]);
 
   const handleToggleFavorite = useCallback(() => {
     setIsFavorite(!isFavorite);
@@ -210,6 +179,7 @@ const BookDetail = () => {
       success('Lien copié dans le presse-papiers !');
     }
   }, [book?.title, book?.author, success]);
+
   // Composant pour les étoiles de notation (memoized for performance)
   const StarRating = useMemo(() => ({ rating, size = 'sm', showCount = false, count = 0 }) => {
     const stars = [];
@@ -246,6 +216,7 @@ const BookDetail = () => {
       </div>
     );
   }, []);
+  
   // Composant pour les tabs (memoized)
   const TabButton = useCallback(({ id, label, icon: IconComponent, isActive, onClick }) => (
     <button

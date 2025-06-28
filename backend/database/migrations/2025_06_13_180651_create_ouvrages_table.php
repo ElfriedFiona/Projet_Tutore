@@ -18,14 +18,14 @@ return new class extends Migration
             $table->string('titre');
             $table->string('auteur');
             $table->string('editeur')->nullable();
-            $table->date('anneePublication');
+            $table->year('anneePublication');
             $table->text('description')->nullable();
-            $table->string('langue');
+            $table->string('langue')->nullable();
             $table->integer('nbPages');
             $table->string('emplacement')->nullable();
             $table->string('imageCouverture');
             $table->integer('nbExemplaire');
-            $table->enum('statut',['disponible', 'indisponible']);
+            $table->enum('statut',['disponible', 'indisponible'])->default('disponible');
             $table->float('prixAcquisition')->nullable();
             $table->timestamps();
         });

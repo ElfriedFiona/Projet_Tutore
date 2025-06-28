@@ -8,6 +8,7 @@ import {
   ResponsiveTwoColumns,
   ResponsiveHeading
 } from '../components/common/ResponsiveComponents';
+import api from '../services/apiService';
 
 const Catalog = () => {
   const { showToast } = useToast();
@@ -19,100 +20,63 @@ const Catalog = () => {
     searchQuery: '',
     availability: 'all'
   });
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    // Simulate API call to get books
+  const fetchCategories = async () => {
+    try {
+      const res = await api.get('/categories');
+      const result = res.data;
+
+      const allOption = { id: 'all', nom: 'Toutes les catégories' };
+      setCategories([allOption, ...result]);
+    } catch (err) {
+      console.error("Erreur chargement catégories :", err);
+      showToast("Impossible de charger les catégories", "error");
+    }
+  };
+
+  fetchCategories();
+}, []);
+
+
+  useEffect(() => {
     const fetchBooks = async () => {
       try {
-        // In a real app, this would be an actual API call with filters
-        // For now, we'll use mock data
-        setTimeout(() => {
-          setBooks([
-            {
-              id: 1,
-              title: 'Les Misérables',
-              author: 'Victor Hugo',
-              coverImage: 'https://placehold.co/400/orange/white?font=roboto',
-              description: 'Un chef-d\'œuvre de la littérature française',
-              category: 'Littérature',
-              available: true
-            },
-            {
-              id: 2,
-              title: 'Introduction à l\'algorithmique',
-              author: 'Thomas H. Cormen',
-              coverImage: 'https://placehold.co/400/orange/white?font=roboto',
-              description: 'Un manuel essentiel pour les étudiants en informatique',
-              category: 'Informatique',
-              available: true
-            },
-            {
-              id: 3,
-              title: 'Histoire de France',
-              author: 'Jacques Bainville',
-              coverImage: 'https://placehold.co/400/orange/white?font=roboto',
-              description: 'Une perspective complète de l\'histoire française',
-              category: 'Histoire',
-              available: false
-            },
-            {
-              id: 4,
-              title: 'Principes d\'économie',
-              author: 'Gregory Mankiw',
-              coverImage: 'https://placehold.co/400/orange/white?font=roboto',
-              description: 'Un manuel d\'introduction à l\'économie',
-              category: 'Économie',
-              available: true
-            },
-            {
-              id: 5,
-              title: 'Le Rouge et le Noir',
-              author: 'Stendhal',
-              coverImage: 'https://placehold.co/400/orange/white?font=roboto',
-              description: 'Un roman classique français',
-              category: 'Littérature',
-              available: true
-            },
-            {
-              id: 6,
-              title: 'Apprendre Python',
-              author: 'Mark Lutz',
-              coverImage: 'https://placehold.co/400/orange/white?font=roboto',
-              description: 'Le guide complet pour débutants',
-              category: 'Informatique',
-              available: false
-            },
-            {
-              id: 7,
-              title: 'La Seconde Guerre mondiale',
-              author: 'Winston Churchill',
-              coverImage: 'https://placehold.co/400/orange/white?font=roboto',
-              description: 'Histoire et mémoires de guerre',
-              category: 'Histoire',
-              available: true
-            },
-            {
-              id: 8,
-              title: 'Marketing Management',
-              author: 'Philip Kotler',
-              coverImage: 'https://placehold.co/400/orange/white?font=roboto',
-              description: 'Principes fondamentaux du marketing moderne',
-              category: 'Économie',
-              available: true
-            }
-          ]);
-          setLoading(false);
-        }, 1000);
-      } catch (error) {
-        setError('Erreur lors du chargement des livres');
+        const booksResponse = await api.get('/ouvrages'); // appel API réel
+        const data = booksResponse.data;
+
+        const formatted = data.map(book => ({
+          id: book.id,
+          title: book.titre,
+          author: book.auteur,
+          coverImage: `http://localhost:8000/${book.imageCouverture}`, // ou un placeholder si manquant
+          description: book.description || 'Pas de description disponible',
+          category: book.categorie?.nom || 'Inconnue',
+          available: book.statut === 'disponible',
+          totalCopies: book.nbExemplaire,
+          availableCopies: book.nbExemplaire, // tu pourras ajuster ici en fonction des réservations
+          year: book.anneePublication ? new Date(book.anneePublication).getFullYear() : 'N/A',
+          isbn: book.isbn,
+          language: book.langue,
+          pages: book.nbPages,
+          publisher: book.editeur || 'Non spécifié',
+          rating: 4.3 // à remplacer plus tard par un vrai champ si tu ajoutes des avis
+        }));
+
+        setBooks(formatted);
         setLoading(false);
-        showToast('Erreur lors du chargement des livres', 'error');
-        console.error("Erreur:", error);
+      } catch (error) {
+        console.error('Erreur de chargement des livres:', error);
+        setError("Erreur lors du chargement des livres");
+        setLoading(false);
+        showToast("Erreur lors du chargement des livres", "error");
       }
     };
 
     fetchBooks();
   }, [showToast]);
+
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -190,7 +154,8 @@ const Catalog = () => {
                 placeholder="Titre, auteur, description..."
                 className="w-full px-4 py-3 bg-white/80 border border-neutral-300 text-neutral-900 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 placeholder-neutral-500 transition-all duration-300 hover:border-secondary-400 hover:shadow-lg backdrop-blur-sm"
               />
-            </div>            <div className="group">
+            </div>            
+            <div className="group">
               <label className="block text-sm font-medium text-neutral-700 mb-2 group-hover:text-primary-600 transition-colors">
                 <span className="flex items-center">
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,14 +170,15 @@ const Catalog = () => {
                 onChange={handleFilterChange}
                 className="w-full px-4 py-3 bg-white/80 border border-neutral-300 text-neutral-900 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-300 hover:border-secondary-400 hover:shadow-lg backdrop-blur-sm"
               >
-                <option value="">Toutes les catégories</option>
-                <option value="Littérature">📚 Littérature</option>
-                <option value="Informatique">💻 Informatique</option>
-                <option value="Histoire">🏛️ Histoire</option>
-                <option value="Économie">📈 Économie</option>
-                <option value="Sciences">🔬 Sciences</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.nom === 'Toutes les catégories' ? '' : cat.nom}>
+                    {cat.nom === 'Toutes les catégories' ? '📋 Toutes les catégories' : cat.nom}
+                  </option>
+                ))}
               </select>
-            </div>            <div className="group">
+            </div>
+            
+            <div className="group">
               <label className="block text-sm font-medium text-neutral-700 mb-2 group-hover:text-primary-600 transition-colors">
                 <span className="flex items-center">
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

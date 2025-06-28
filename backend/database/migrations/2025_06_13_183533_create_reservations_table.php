@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('reservations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('ouvrage_id')->constrained('ouvrages')->onDelete('cascade');
+            $table->foreignId('ouvrages_id')->constrained('ouvrages')->onDelete('cascade');
             $table->date('dateReservation');
             $table->date('dateExpiration');
             $table->enum('statut',['en_cours', 'terminé'])->default('en_cours');

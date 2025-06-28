@@ -9,6 +9,7 @@ import ResponsiveDashboardContainer, {
   ResponsiveDashboardActions
 } from '../../components/dashboard/ResponsiveDashboardContainer';
 import useResponsiveDashboard from '../../hooks/useResponsiveDashboard';
+import api from '../../services/apiService';
 
 const DashboardProfile = () => {
   const [activeTab, setActiveTab] = useState('info');
@@ -18,6 +19,23 @@ const DashboardProfile = () => {
   // Hooks responsifs et auth
   const { isMobile, isTablet, getResponsiveClasses, getGridConfig } = useResponsiveDashboard();
   const { user } = useAuth();
+  const [ setUserStats] = useState(null);
+
+useEffect(() => {
+  const fetchStats = async () => {
+    try {
+      const response = await api.get('/profile/statistics');
+      setUserStats(response.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des stats", error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  fetchStats();
+}, []);
+
     // Fonction pour obtenir les données selon le rôle
   const getUserDataByRole = () => {
     const currentUserRole = user?.role || user?.userType || 'student'; // Priorité aux vraies données
@@ -191,6 +209,75 @@ const DashboardProfile = () => {
 
     return statsData[currentUserRole] || statsData.student;
   };
+
+  const mapFrontendToBackendRole = (role) => {
+  const map = {
+    student: 'etudiant',
+    teacher: 'enseignant',
+    librarian: 'bibliothecaire',
+    admin: 'admin',
+    administrator: 'admin',
+  };
+  return map[role] || 'etudiant';
+};
+
+const mapBackendToFrontendRole = (role) => {
+  const map = {
+    etudiant: 'student',
+    enseignant: 'teacher',
+    bibliothecaire: 'librarian',
+    admin: 'admin',
+  };
+  return map[role] || 'student';
+};
+
+useEffect(() => {
+  const fetchProfile = async () => {
+    try {
+      const response = await api.get('/profile');
+      const { user } = response.data;
+
+      const backendRole = user.role;
+      const frontendRole = mapBackendToFrontendRole(backendRole);
+      const roleData = user[backendRole] || {};
+
+      const profileData = {
+        firstName: user.prenom,
+        lastName: user.nom,
+        email: user.email,
+        phone: user.telephone,
+        department: roleData.departement || '',
+        grade: roleData.grade || '',
+        role: frontendRole,
+        birthDate: '', // Ajoute si dispo dans le backend
+        address: '',   // idem
+        bio: '',
+        enrollmentDate: user.created_at || '',
+        ...(backendRole === 'etudiant' && {
+          niveau: roleData.niveau || '',
+          filiere: roleData.filiere || '',
+          studentId: roleData.matricule || ''
+        }),
+        ...(backendRole === 'enseignant' && {
+          specialization: roleData.specialite || ''
+        }),
+        ...(backendRole === 'bibliothecaire' && {
+          hireDate: roleData.dateRecrutement || ''
+        }),
+        ...(backendRole === 'admin' && {
+          niveau: roleData.niveau || ''
+        })
+      };
+
+      setFormData(profileData);
+    } catch (error) {
+      console.error('Erreur lors de la récupération du profil', error);
+    }
+  };
+
+  fetchProfile();
+}, []);
+
   const [formData, setFormData] = useState(getUserDataByRole());
 
   const [passwordData, setPasswordData] = useState({
@@ -337,27 +424,79 @@ const DashboardProfile = () => {
     }));
   };
 
-  const handleSaveProfile = () => {
-    console.log('Sauvegarder le profil:', formData);
+  const handleSaveProfile = async () => {
+  try {
+    const backendRole = mapFrontendToBackendRole(formData.role);
+    const payload = {
+      nom: formData.lastName,
+      prenom: formData.firstName,
+      email: formData.email,
+      telephone: formData.phone,
+      departement: formData.department,
+      grade: formData.grade,
+    };
+
+    // Ajouter les champs spécifiques selon le rôle
+    if (backendRole === 'etudiant') {
+      payload.niveau = formData.niveau;
+      payload.filiere = formData.filiere;
+      payload.matricule = formData.studentId;
+    } else if (backendRole === 'enseignant') {
+      payload.specialite = formData.specialization;
+    } else if (backendRole === 'admin') {
+      payload.niveau = formData.niveau;
+    }
+
+    await api.put('/profile', payload);
+
     setIsEditing(false);
-    // Add animation feedback
     const button = document.querySelector('[data-save-profile]');
     if (button) {
       button.classList.add('animate-pulse');
       setTimeout(() => button.classList.remove('animate-pulse'), 1000);
     }
-  };
 
-  const handleChangePassword = () => {
-    console.log('Changer le mot de passe');
-    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    // Add animation feedback
-    const form = document.querySelector('[data-password-form]');
-    if (form) {
-      form.classList.add('animate-bounce');
-      setTimeout(() => form.classList.remove('animate-bounce'), 500);
+    alert('Profil mis à jour avec succès');
+  } catch (err) {
+    console.error('Erreur lors de la mise à jour', err);
+    alert('Erreur lors de la mise à jour du profil');
+  }
+};
+
+  const handleChangePassword = async () => {
+    try {
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        alert("Les nouveaux mots de passe ne correspondent pas.");
+        return;
+      }
+
+      const response = await api.post('/change-password', {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+        newPassword_confirmation: passwordData.confirmPassword
+      });
+
+      alert(response.data.message); // ou mieux : une alerte toast
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+
+      // Feedback visuel
+      const form = document.querySelector('[data-password-form]');
+      if (form) {
+        form.classList.add('animate-bounce');
+        setTimeout(() => form.classList.remove('animate-bounce'), 500);
+      }
+
+    } catch (error) {
+      if (error.response?.data?.errors) {
+        const errors = error.response.data.errors;
+        const messages = Object.values(errors).flat().join('\n');
+        alert(messages);
+      } else {
+        alert("Une erreur est survenue. Veuillez réessayer.");
+      }
     }
   };
+  
   const getMembershipColor = (level) => {
     const colors = {
       'Bronze': 'bg-secondary-100 text-secondary-800 border-secondary-200',
@@ -667,6 +806,24 @@ const DashboardProfile = () => {
         return null;
     }
   };
+
+  const handleDeleteAccount = async () => {
+  const confirmDelete = window.confirm("Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.");
+  if (!confirmDelete) return;
+
+  try {
+    const response = await api.delete('/delete-account');
+    alert(response.data.message);
+
+    // Rediriger vers la page d'accueil ou login après suppression
+    window.location.href = '/login'; // ou utiliser navigate('/login') si tu utilises react-router
+
+  } catch (error) {
+    alert("Une erreur est survenue lors de la suppression du compte.");
+    console.error(error);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 p-4 sm:p-6">
@@ -1077,7 +1234,10 @@ const DashboardProfile = () => {
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Actions du compte</h3>
 
               <div className="space-y-4">
-                <button className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                <button
+                  onClick={handleDeleteAccount}
+                  className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                >
                   🗑️ Supprimer le compte
                 </button>
                 <p className="text-sm text-gray-600">

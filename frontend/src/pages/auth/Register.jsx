@@ -79,7 +79,7 @@ const Register = () => {
         errors.confirmPassword = 'Confirmez votre mot de passe';
       } else if (formData.password !== formData.confirmPassword) {
         errors.confirmPassword = 'Les mots de passe ne correspondent pas';
-      } if (formData.userType === 'student') {
+      } if (formData.userType === 'etudiant') {
         if (!formData.matricule.trim()) {
           errors.matricule = 'Matricule d\'étudiant requis';
         }
@@ -89,7 +89,7 @@ const Register = () => {
         if (!formData.niveau.trim()) {
           errors.niveau = 'Niveau requis';
         }
-      } else if (formData.userType === 'teacher') {
+      } else if (formData.userType === 'enseignant') {
         if (!formData.employeeId.trim()) {
           errors.employeeId = 'Numéro d\'employé requis';
         }
@@ -99,11 +99,11 @@ const Register = () => {
         if (!formData.grade.trim()) {
           errors.grade = 'Grade requis';
         }
-      } else if (formData.userType === 'librarian') {
+      } else if (formData.userType === 'bibliothecaire') {
         if (!formData.employeeId.trim()) {
           errors.employeeId = 'Numéro d\'employé requis';
         }
-      } else if (formData.userType === 'administrator') {
+      } else if (formData.userType === 'admin') {
         if (!formData.employeeId.trim()) {
           errors.employeeId = 'Numéro d\'employé requis';
         }
@@ -144,21 +144,35 @@ const Register = () => {
     setCurrentStep(1);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLocalError(''); // Clear local error
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLocalError('');
 
-    if (validateForm()) {
-      try {
-        const { confirmPassword: _confirmPassword, ...userData } = formData;
-        await register(userData);
-      } catch (err) {
-        console.error('Registration error:', err);
-        // Capturer l'erreur localement
-        setLocalError(err.message || 'Erreur lors de l\'inscription. Veuillez réessayer.');
-      }
+  if (validateForm()) {
+    try {
+      const { confirmPassword, password, ...otherData } = formData;
+      
+      const userData = {
+        ...otherData,
+        mdp: password,
+        mdp_confirmation: confirmPassword // Keep this field!
+      };
+
+      // Send userData WITH mdp_confirmation - don't remove it!
+      await register(userData);
+
+      setTimeout(() => {
+        navigate('/login', {
+          state: { registered: true },
+        });
+      }, 500);
+    } catch (err) {
+      console.error('Registration error:', err);
+      setLocalError(err.message || 'Erreur lors de l\'inscription. Veuillez réessayer.');
     }
-  };
+  }
+};
+
   const departmentOptions = [
     // { value: '', label: 'Choisir un département' },
     { value: 'lettres', label: 'Lettres et Sciences Humaines' },
@@ -169,10 +183,10 @@ const Register = () => {
     { value: 'informatique', label: 'Informatique et Numérique' }
   ]; const userTypeOptions = [
     // { value: '', label: 'Choisir votre profil' },
-    { value: 'student', label: 'Étudiant' },
-    { value: 'teacher', label: 'Enseignant' },
-    { value: 'librarian', label: 'Bibliothécaire' },
-    { value: 'administrator', label: 'Administrateur' }
+    { value: 'etudiant', label: 'Étudiant' },
+    { value: 'enseignant', label: 'Enseignant' },
+    { value: 'bibliothecaire', label: 'Bibliothécaire' },
+    { value: 'admin', label: 'Administrateur' }
   ];
 
   const gradeOptions = [
@@ -334,7 +348,7 @@ const Register = () => {
                 />
               </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {formData.userType === 'student' ? (
+                  {formData.userType === 'etudiant' ? (
                     <FormInput
                       id="matricule"
                       name="matricule"
@@ -347,19 +361,19 @@ const Register = () => {
                       required
                       className="transition-all duration-300 focus:scale-[1.02]"
                     />
-                  ) : (formData.userType === 'teacher' || formData.userType === 'librarian' || formData.userType === 'administrator') ? (
+                  ) : (formData.userType === 'enseignant' || formData.userType === 'bibliothecaire' || formData.userType === 'administrator') ? (
                     <FormInput
                       id="employeeId"
                       name="employeeId"
                       type="text"
-                      label={formData.userType === 'teacher' ? "Numéro d'employé" :
-                        formData.userType === 'librarian' ? "Numéro Bibliothécaire" :
+                      label={formData.userType === 'enseignant' ? "Numéro d'employé" :
+                        formData.userType === 'bibliothecaire' ? "Numéro Bibliothécaire" :
                           "Numéro Administrateur"}
                       value={formData.employeeId}
                       onChange={handleChange}
                       error={formErrors.employeeId}
-                      placeholder={formData.userType === 'teacher' ? "EMP123456" :
-                        formData.userType === 'librarian' ? "LIB123456" :
+                      placeholder={formData.userType === 'enseignant' ? "EMP123456" :
+                        formData.userType === 'bibliothecaire' ? "LIB123456" :
                           "ADM123456"}
                       required
                       className="transition-all duration-300 focus:scale-[1.02]"
@@ -378,7 +392,7 @@ const Register = () => {
                   />
                 </div>
 
-                {formData.userType === 'student' && (
+                {formData.userType === 'etudiant' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormInput
                       id="filiere"
@@ -408,7 +422,7 @@ const Register = () => {
                   </div>
                 )}
 
-                {formData.userType === 'teacher' && (
+                {formData.userType === 'enseignant' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormInput
                       id="specialization"

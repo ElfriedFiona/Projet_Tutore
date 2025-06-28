@@ -8,7 +8,7 @@ class Reservation extends Model
 {
     protected $fillable =[
         'user_id',
-        'ouvrage_id',
+        'ouvrages_id',
         'dateReservation',
         'dateExpiration',
         'statut',
