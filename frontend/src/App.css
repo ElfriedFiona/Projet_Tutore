@@ -1,29 +1,77 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  min-height: 100vh;
+  width: 100%;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Animation pour le Fil d'Ariane */
+.animate-slide-in {
+  animation: slideInRight 0.3s forwards;
 }
 
-@keyframes logo-spin {
+/* Animation pour les toasts */
+.animate-slide-in {
+  animation: slideInRight 0.3s forwards;
+}
+
+.animate-fade-out {
+  animation: fadeOut 0.3s forwards;
+}
+
+/* Animation pour le bouton "retour en haut" */
+.animate-heartbeat {
+  animation: heartBeat 1s ease-in-out;
+}
+
+.animate-growFromLeft {
+  animation: growFromLeft 0.3s ease-in-out forwards;
+}
+
+@keyframes slideInRight {
   from {
-    transform: rotate(0deg);
+    transform: translateX(100%);
+    opacity: 0;
   }
   to {
-    transform: rotate(360deg);
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes heartBeat {
+  0% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.3);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.3);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
+@keyframes growFromLeft {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
   }
 }
 
@@ -39,4 +87,259 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* Animations personnalisées pour les BookCard */
+@keyframes animate-float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes animate-pulse-shadow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+  }
+}
+
+@keyframes animate-bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Animations pour le Header responsive */
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes bounce-in-mobile {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-float {
+  animation: animate-float 2s ease-in-out infinite;
+}
+
+.animate-pulse-shadow {
+  animation: animate-pulse-shadow 2s ease-in-out infinite;
+}
+
+.animate-bounce-in {
+  animation: animate-bounce-in 0.6s ease-out forwards;
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 0.3s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.4s ease-out forwards;
+}
+
+.animate-bounce-in-mobile {
+  animation: bounce-in-mobile 0.5s ease-out forwards;
+}
+
+/* Animations avancées pour le menu burger ultra-moderne */
+@keyframes burger-line-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 4px rgba(251, 191, 36, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.8),
+      0 0 12px rgba(251, 191, 36, 0.4);
+  }
+}
+
+@keyframes burger-rotate-in {
+  from {
+    transform: rotate(-180deg) scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes burger-scale-bounce {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.2);
+  }
+  60% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes burger-line-wave {
+  0%,
+  100% {
+    transform: translateX(0) scaleX(1);
+  }
+  25% {
+    transform: translateX(2px) scaleX(1.1);
+  }
+  75% {
+    transform: translateX(-2px) scaleX(0.9);
+  }
+}
+
+@keyframes ripple-effect {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes rotate-360 {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(16, 185, 129, 0.5),
+      0 0 10px rgba(16, 185, 129, 0.3),
+      0 0 15px rgba(16, 185, 129, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.8),
+      0 0 20px rgba(16, 185, 129, 0.6),
+      0 0 30px rgba(16, 185, 129, 0.4);
+  }
+}
+
+@keyframes gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Classes utilitaires pour les animations burger ultra-modernes */
+.burger-glow {
+  animation: burger-line-glow 2s ease-in-out infinite;
+}
+
+.burger-rotate-in {
+  animation: burger-rotate-in 0.4s ease-out forwards;
+}
+
+.burger-scale-bounce {
+  animation: burger-scale-bounce 0.6s ease-out forwards;
+}
+
+.burger-line-wave {
+  animation: burger-line-wave 1.5s ease-in-out infinite;
+}
+
+.ripple-effect {
+  animation: ripple-effect 0.6s ease-out forwards;
+}
+
+.rotate-360 {
+  animation: rotate-360 0.5s ease-in-out forwards;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-gradient-shift {
+  animation: gradient-shift 3s ease-in-out infinite;
+  background-size: 200% 200%;
+}
+
+/* Utilities supplémentaires pour le design moderne */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}
+
+.bg-gradient-conic {
+  background: conic-gradient(var(--tw-gradient-stops));
+}
+
+/* Smooth blur et backdrop effects */
+.backdrop-blur-md {
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.backdrop-blur-sm {
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
